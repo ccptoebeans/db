@@ -857,7 +857,7 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 		double dd = PyFloat_AsDouble(value);
 		if (dd == -1.0 && PyErr_Occurred())
 			return false;
-		__int64 rr = (__int64)(dd * 10000.0);
+		__int64 rr = (__int64)(floor(dd * 100.0 + 0.5) * 100.0);
 		SetParam(nparam, &rr);
 		paramLen = sizeof(rr);
 		return true;}
