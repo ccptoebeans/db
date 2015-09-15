@@ -32,8 +32,6 @@
 #ifndef _SESSIONPOOL_H_
 #define _SESSIONPOOL_H_
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <stacklessio.h>
 #include <atldbcli.h>
 
@@ -46,8 +44,8 @@
  * would be created behind the scenes with some overhead.
  */
 class SessionPool;
-typedef boost::shared_ptr<SessionPool> SessionPoolPtr;
-class SessionPool : public boost::enable_shared_from_this<SessionPool>
+typedef std::shared_ptr<SessionPool> SessionPoolPtr;
+class SessionPool : public std::enable_shared_from_this<SessionPool>
 {
 public:
 	SessionPool(const ATL::CDataSource &c);

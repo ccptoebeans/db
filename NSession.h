@@ -36,7 +36,6 @@
 #include <msdadc.h>	// for IDataConvert
 
 #include <stacklessio.h>
-#include <boost/shared_ptr.hpp>
 
 
 extern ITaskletTimer *ttimer;

@@ -235,7 +235,7 @@ HRESULT SessionPool::TaskletBlockingNewSession(ATL::CSession* &s)
 	//but lets not worry.
 	InterlockedIncrement(&mSessionCount);
 	try {
-		boost::intrusive_ptr<Request> req = new Request(this->shared_from_this());
+		std::unique_ptr<Request> req( new Request(this->shared_from_this()) );
 		req->ExecuteAndWait();
 		return req->GetResult(s);
 	} catch(std::exception) {
