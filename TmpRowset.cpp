@@ -337,7 +337,6 @@ DelayedException *Row::Init(DBLENGTH &recvLen, RowDescriptor const &d, OurAccess
 
 PyObject *Row::ToPython(const RowDescriptor &rd, PyObject *pyrd, ToPythonCtxt &ctxt)
 {
-	//TTIMER2("DB::NSession::ToPython::Row");
 	// Raise any warning (or exception if turns out to be one
 	if (mWarning.get()) {
 		if (!mWarning->Raise())
@@ -437,11 +436,7 @@ PyObject *TmpRowset::ToPython(ToPythonCtxt &ctxt)
 			ctxt.mLastPyBytes = ctxt.GetMem();
 		}
 	}
-#if 0 //this turns out to be not reliable.  Forget it.
-	if (mRC != DB_COUNTUNAVAILABLE) {
-		LOGTR(LGINFO, "(%d row(s) affected)", mRC);
-	}
-#endif
+
 	return rs.Detach();
 }
 
@@ -506,7 +501,6 @@ TmpRowsetList::~TmpRowsetList()
 
 PyObject *TmpRowsetList::ToPython(ToPythonCtxt &ctxt)
 {
-	//TTIMER1("DB::NSession::ToPython::RowSetList");
 	int len = (int)mRowsets.size();
 	if (!len)
 		return PyInt_FromLong(mProcResult);

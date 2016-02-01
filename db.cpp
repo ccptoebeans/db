@@ -27,13 +27,7 @@ extern "C" void _setenvp(){}
 //--------------------------------------------------------------------
 void BlueClientStart(HINSTANCE instance)
 {
-	// Init ATL
-	//_Module.Init(NULL, instance);
-	
 	CCP_LOG( "DB Lib starting" );
-
-	// Init OLEDBPro key
-	//strcpy(g_strOleDBProKey, "langmuirprobe");
 	
 	// Init Python related
 	PyObject* module = Py_InitModule("db", NULL);

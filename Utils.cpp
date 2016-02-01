@@ -39,15 +39,7 @@ static PyObject* InsertNewException(const char* name, PyObject* parent, PyObject
 // InitUtilities
 //--------------------------------------------------------------------
 bool Utilities::InitUtilities(PyObject* dict)
-{
-	// My fancy exception classes
-#define INSERT_EXC(_exc, _name, _inherit) \
-	_exc = PyErr_NewException("db." ##_name, _inherit, NULL); \
-	if (_exc == NULL) \
-		return false; \
-	PyDict_SetItemString(dbModuleDict, _name, _exc);
-
-	
+{	
 	DbExc_RuntimeError = PyExc_RuntimeError;
 	Py_INCREF(DbExc_RuntimeError);
 	DbExc_WindowsError = PyExc_WindowsError;
@@ -114,16 +106,12 @@ const char* Utilities::DBTypeName(DBTYPE type)
 	case DBTYPE_IUNKNOWN:		name = "DBTYPE_IUNKNOWN"; break;
 	case DBTYPE_DECIMAL:		name = "DBTYPE_DECIMAL:	"; break;
 	case DBTYPE_UI1:			name = "DBTYPE_UI1"; break;
-	//case DBTYPE_ARRAY:			name = "DBTYPE_ARRAY"; break;	
-	//case DBTYPE_BYREF:			name = "DBTYPE_BYREF"; break;	
 	case DBTYPE_I1:				name = "DBTYPE_I1"; break;
 	case DBTYPE_UI2:			name = "DBTYPE_UI2"; break;
 	case DBTYPE_UI4:			name = "DBTYPE_UI4"; break;
 	case DBTYPE_I8:				name = "DBTYPE_I8"; break;
 	case DBTYPE_UI8:			name = "DBTYPE_UI8"; break;
 	case DBTYPE_GUID:			name = "DBTYPE_GUID"; break;	
-	//case DBTYPE_VECTOR:			name = "DBTYPE_VECTOR"; break;	
-	//case DBTYPE_RESERVED:		name = "DBTYPE_RESERVED"; break;
 	case DBTYPE_BYTES:			name = "DBTYPE_BYTES"; break;
 	case DBTYPE_STR:			name = "DBTYPE_STR"; break;
 	case DBTYPE_WSTR:			name = "DBTYPE_WSTR"; break;

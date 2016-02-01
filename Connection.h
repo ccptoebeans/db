@@ -30,19 +30,11 @@ class Connection :
 {
 public:
 	EXPOSE_TO_BLUE();
-	
-	/////////////////////////////////////////
-	// data members
 
 	// mSchema is a Tuple of two dicts. First dict has key as stored proc name and
 	// value is list of parameter columns info.
 	// Second dict has key as table name and value is list of columns info
 	PyObject* mSchema;
-	
-	//RotID mID;
-
-	/////////////////////////////////////////
-	// Public member functions
 
 	Connection();
 	~Connection();

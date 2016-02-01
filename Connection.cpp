@@ -241,7 +241,6 @@ PyObject* Connection::GetSchema(CSession& session, bool refresh)
 		return 0;
 	CCP_LOG_CH( s_chConn, "... done");
 
-	//PyObject  *colInfo = TableSchemaNew(session);  //this is no longer needed!
 	PyObject *colInfo = Py_None; Py_INCREF(colInfo);
 	if (!colInfo) {
 		Py_DECREF(procParams);
@@ -616,15 +615,3 @@ PyObject *Connection::TableSchemaNew(CSession &session)
 	PySys_WriteStdout("done!\r\n");
 	return colInfo;
 }
-
-
-#ifndef NOPYTHON
-
-//////////////////////////////////////////////////////////////////////
-//
-// Python thunkers
-//
-//////////////////////////////////////////////////////////////////////
-
-
-#endif
