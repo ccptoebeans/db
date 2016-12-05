@@ -427,6 +427,7 @@ bool SessionPool::ApplySettings(PyObject *settings)
 		d = PyFloat_AsDouble(v);
 		if (d==-1.0 && PyErr_Occurred()) return false;
 		mCleanEvery = max(0, (float)d);
+		mNextClean.QuadPart = 0;
 	}
 
 	//Add idle sessions if needed...
