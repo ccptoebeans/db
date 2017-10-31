@@ -232,8 +232,9 @@ PyObject* Connection::GetSchema(CSession& session, bool refresh)
 		procParams = ProcParamsNew8(session);
 	else if (!strncmp(version.c_str(), "9.", 2) || !strncmp(version.c_str(), "10.", 3) ||
              !strncmp(version.c_str(), "11.", 3) || !strncmp(version.c_str(), "12.", 3) ||
-             !strncmp(version.c_str(), "13.", 3))
-		//SQL server 2005 or 2008 or 2012 or 2014
+             !strncmp(version.c_str(), "13.", 3) || !strncmp(version.c_str(), "14.", 3))
+		//SQL server versions:
+		//9.=2005, 10.=2008 and 200R2, 11.=2012, 12.=2014, 13.=2016, 14.=2017
 		procParams = ProcParamsNew9(session);
 	else
 		//any others
