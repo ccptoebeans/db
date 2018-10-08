@@ -97,6 +97,18 @@ bool StringStoreElem::operator < (const StringStoreElem &rhs) const
 }
 
 
+// Taken from VC10 xhash, since it doesn't exist anymore in VC2017, and we want to maintain compatible hashing
+template <class _InIt>
+inline size_t _Hash_value( _InIt _Begin, _InIt _End )
+{	// hash range of elements
+	size_t _Val = 2166136261U;
+
+	while (_Begin != _End)
+		_Val = 16777619U * _Val ^ (size_t)*_Begin++;
+	return (_Val);
+}
+
+
 void StringStoreElem::Hash()
 {
 	//hash first 64 elements
@@ -107,9 +119,9 @@ void StringStoreElem::Hash()
 		return;
 	const size_t maxHash = 64;
 	if (mUnicode)
-		mHash = stdext::_Hash_value(mWData, mWData+min(mElements,maxHash));
+		mHash = _Hash_value(mWData, mWData+min(mElements,maxHash));
 	else
-		mHash = stdext::_Hash_value(mCData, mCData+min(mElements,maxHash));
+		mHash = _Hash_value(mCData, mCData+min(mElements,maxHash));
 }
 
 
