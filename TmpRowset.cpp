@@ -150,7 +150,7 @@ PyObject *RowDescriptor::ToPython(PyObject *blueModule)
 	BluePy raw(PyCapsule_New(&mColumnList, "DBRowDescriptor", 0));
 	if (!raw)
 		return 0;
-	return PyObject_CallMethod(blueModule, "DBRowDescriptor", "O", raw.o);
+	return PyObject_CallMethod(blueModule, (char*)"DBRowDescriptor", (char*)"O", raw.o);
 }
 
 

@@ -87,7 +87,7 @@ class NSession :
 	typedef CCommand<CDynamicParameterAccessor, CArrayRowset, CMultipleResults> command_t;
 
 public:
-	PYTHON_CLASS("db.NSession");
+	PYTHON_CLASS((char*)"db.NSession");
 
 	NSession();
 	~NSession();
@@ -104,19 +104,19 @@ public:
 		METHOD_O(SetSessionSettings, "Set settings for session pool")
 	PYTHON_METHODS_END()
 	PYTHON_GETSET_BEGIN()
-		PYTHON_GETINT64("totalBytesSentParam", mTotalBytesSentParam, "Total bytes sent in out params.")
-		PYTHON_GETINT64("totalBytesReceived", mTotalBytesReceived, "Total bytes received")
-		PYTHON_GETINT64("lastPyBytes", mLastPyBytes, "python bytes allocated in last request")
+		PYTHON_GETINT64( (char*)"totalBytesSentParam", mTotalBytesSentParam, (char*)"Total bytes sent in out params.")
+		PYTHON_GETINT64( (char*)"totalBytesReceived", mTotalBytesReceived, (char*)"Total bytes received")
+		PYTHON_GETINT64( (char*)"lastPyBytes", mLastPyBytes, (char*)"python bytes allocated in last request")
 	PYTHON_GETSET_END()
 	PYTHON_MEMBERS_BEGIN()
-        PYTHON_MEMBER("blobSizeLimit", T_INT, mBlobSizeLimit, 0)
-		PYTHON_MEMBER("lastWallclockTime", T_DOUBLE, mLastWallclockTime, RO)
-		PYTHON_MEMBER("lastKernelTime", T_DOUBLE, mLastKernelTime, RO)
-		PYTHON_MEMBER("lastUserTime", T_DOUBLE, mLastUserTime, RO)		
-		PYTHON_MEMBER("beNiceEvery", T_INT, mBeNiceEvery, 0)
-		PYTHON_MEMBER("allowSync", T_INT, mAllowSync, 0)
-		PYTHON_MEMBER("timerDetail", T_INT, mTimerDetail, 0)
-		PYTHON_MEMBER("lastStringReuse", T_INT, mLastStringReuse, RO)
+        PYTHON_MEMBER( (char*)"blobSizeLimit", T_INT, mBlobSizeLimit, 0)
+		PYTHON_MEMBER( (char*)"lastWallclockTime", T_DOUBLE, mLastWallclockTime, RO)
+		PYTHON_MEMBER( (char*)"lastKernelTime", T_DOUBLE, mLastKernelTime, RO)
+		PYTHON_MEMBER( (char*)"lastUserTime", T_DOUBLE, mLastUserTime, RO)
+		PYTHON_MEMBER( (char*)"beNiceEvery", T_INT, mBeNiceEvery, 0)
+		PYTHON_MEMBER( (char*)"allowSync", T_INT, mAllowSync, 0)
+		PYTHON_MEMBER( (char*)"timerDetail", T_INT, mTimerDetail, 0)
+		PYTHON_MEMBER( (char*)"lastStringReuse", T_INT, mLastStringReuse, RO)
 	PYTHON_MEMBERS_END()
 
 	static bool InitType(PyTypeObject *type) 
