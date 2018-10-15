@@ -127,7 +127,7 @@ namespace PyErr
 class PyXTypeObject : public PyTypeObject
 {
 public:
-	PyXTypeObject::PyXTypeObject(char *name) {
+	PyXTypeObject(char *name) {
 		static const PyTypeObject def = {PyObject_HEAD_INIT(0)}; //the default, empty dude.
 		*static_cast<PyTypeObject*>(this) = def;
 		tp_name = name;
@@ -177,7 +177,7 @@ public:
 	template <PYCPROCNOARGS meth>
 	static int PyCProcNoArgs(PyObject* self)
 	{
-		T* pThis = static_castt<T*>(self);
+		T* pThis = static_cast<T*>(self);
 		return (pThis->*meth)();
 	}
 
@@ -224,7 +224,7 @@ public:
 			return -1;
 
 		T* pThis = static_cast<T*>(self);
-		pThis->*P = PyLong_AsLongLong(number);
+		pThis->*P = PyLong_AsLongLong(tmp);
 		return 0;
 	}
 };
@@ -488,7 +488,7 @@ struct DList
 			return NULL;
 
 		int i = 0;
-		for (LI::_TClass* o = mFirst; o != NULL; o = o->LI::mNext)
+		for (T* o = mFirst; o != NULL; o = o->LI::mNext)
 		{
 			PyList_SET_ITEM(list, i++, o);
 			Py_INCREF(o);
@@ -630,6 +630,7 @@ struct AutoList :
 public:
 
 	typedef AutoList<T> _Class;
+	typedef DList<_Class> _List;
 	static _List mInstanceList;
 
 	AutoList()
@@ -639,7 +640,7 @@ public:
 
 	~AutoList()
 	{
-		Unlink();
+		::Unlink();
 	}
 
 	// Python property access for autolist
