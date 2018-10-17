@@ -1072,7 +1072,7 @@ PyObject* SQLCommand::Raise(const char *msg, HRESULT hr, const CDBErrorInfo *err
 	// Put everything together
 	BluePy errorArgs = BluePy(Py_BuildValue("isOuOO",
 		hr, msg, errorRecords,
-		sql?sql:L"", paramErrors, columnErrors));
+		sql?sql:(wchar_t*)L"", paramErrors, columnErrors));
 	if (!errorArgs)
 		return 0;
 	return PyErr_SetObject(Utilities::ErrorClass(hr), errorArgs), 0;

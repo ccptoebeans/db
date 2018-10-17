@@ -66,6 +66,8 @@ class StlPoolAllocator :
 	public std::allocator<T>
 {
 public:
+	using pointer = T * ;
+	using size_type = size_t;
 	StlPoolAllocator(SimplePoolAllocator &a) throw() : mA(a) {}
 	StlPoolAllocator(const StlPoolAllocator<T> &o) throw() : mA(o.mA) {}
 	template <class T2>
