@@ -66,8 +66,6 @@ class StlPoolAllocator :
 	public std::allocator<T>
 {
 public:
-	using pointer = T * ;
-	using size_type = size_t;
 	StlPoolAllocator(SimplePoolAllocator &a) throw() : mA(a) {}
 	StlPoolAllocator(const StlPoolAllocator<T> &o) throw() : mA(o.mA) {}
 	template <class T2>
@@ -78,13 +76,13 @@ public:
 		typedef StlPoolAllocator<T2> other;
 	};
 
-	pointer allocate(size_type _Count, const void *hint) {
-		return reinterpret_cast<pointer>(mA.malloc(_Count * sizeof(T)));
+	T* allocate(size_t _Count, const void *hint) {
+		return reinterpret_cast<T*>(mA.malloc(_Count * sizeof(T)));
 	}
-	pointer allocate(size_type _Count) {
+	T* allocate(size_t _Count) {
 		return allocate(_Count, 0);
 	}
-	void deallocate(pointer _ptr, size_type _Count) {} //do nothing
+	void deallocate(T* _ptr, size_t _Count) {} //do nothing
 
 public:
 	SimplePoolAllocator &mA;
