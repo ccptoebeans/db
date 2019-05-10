@@ -1,34 +1,53 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{a8a89c47-84b5-4597-924a-9806c1422c3b}</UniqueIdentifier>
-      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{5b2f0ee2-a79b-4ab9-b597-22c88bad6341}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl</Extensions>
-    </Filter>
-    <Filter Include="Output">
-      <UniqueIdentifier>{0c1495b5-ad1f-4653-a694-0eecc3e2efc7}</UniqueIdentifier>
-      <Extensions>exe;dll;pdb;lib</Extensions>
-    </Filter>
-    <Filter Include="Output\win32">
-      <UniqueIdentifier>{c1b6739d-53e9-4511-9655-27d72dd6ba4b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Output\x64">
-      <UniqueIdentifier>{92605ecb-8ac6-4cb4-8bad-d594c3b58e7c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{ef2aad3a-5116-4806-9ba4-afb3a0db30be}</UniqueIdentifier>
-      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
-    </Filter>
+    <Filter Include="Resource Files"/>
+    <Filter Include="Source Files"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="autoversion.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BlockAllocator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Connection.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DelayedException.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NSession.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionPool.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringStore.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TmpRowset.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClCompile Include="BlockAllocator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Connection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Connection_Blue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="db.cpp">
@@ -55,71 +74,8 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Connection_Blue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="BlockAllocator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Connection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DelayedException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NSession.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SessionPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StdAfx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StringStore.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TmpRowset.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="version.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="db.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\autobuild\db\win32\db.dll">
-      <Filter>Output\win32</Filter>
-    </None>
-    <None Include="..\..\autobuild\db\win32\db.pdb">
-      <Filter>Output\win32</Filter>
-    </None>
-    <None Include="..\..\autobuild\db\win32\db_d.dll">
-      <Filter>Output\win32</Filter>
-    </None>
-    <None Include="..\..\autobuild\db\win32\db_d.pdb">
-      <Filter>Output\win32</Filter>
-    </None>
-    <None Include="..\..\autobuild\db\x64\db.dll">
-      <Filter>Output\x64</Filter>
-    </None>
-    <None Include="..\..\autobuild\db\x64\db.pdb">
-      <Filter>Output\x64</Filter>
-    </None>
-    <None Include="..\..\autobuild\db\x64\db_d.dll">
-      <Filter>Output\x64</Filter>
-    </None>
-    <None Include="..\..\autobuild\db\x64\db_d.pdb">
-      <Filter>Output\x64</Filter>
-    </None>
   </ItemGroup>
 </Project>

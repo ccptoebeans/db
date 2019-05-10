@@ -1,0 +1,106 @@
+General:
+  ConfigurationType: DynamicLibrary
+  UseOfMfc: false
+  UseOfAtl: false
+  TargetExt: .dll
+
+ClCompile:
+  EnableEnhancedInstructionSet: StreamingSIMDExtensions2
+  PrecompiledHeader: NotUsing
+  DebugInformationFormat: ProgramDatabase
+  WarningLevel: Level3
+  TreatWarningAsError: true
+  BufferSecurityCheck: false
+  AdditionalIncludeDirectories:
+  - $(CcpSdkPath)\MicrosoftSQLServer\100\SDK\include
+  PreprocessorDefinitions:
+  - _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+
+Link:
+  GenerateDebugInformation: true
+
+vsPropertySheets:
+  - ../core_project/core_project.props
+  - ../blue/Include/blue.props
+  - ../manifests/non_ccpproj_manifests.props
+
+BaseConfigurations:
+  DebugBase:
+    # Must specify our `OutDir` *after* the "blue.props" sheet (which includes "stackless_project.props"),
+    # otherwise our setting will be over-riden by the stackless one.
+    General:
+      IntDir: ../temp/$(ProjectName)/$(Platform)/$(Configuration)/$(PlatformToolset)/
+      OutDir: ../../autobuild/$(ProjectName)/$(Platform)/$(PlatformToolset)/
+    ClCompile:
+      PreprocessorDefinitions:
+      - _DEBUG
+      Optimization: Disabled
+      BasicRuntimeChecks: EnableFastChecks
+      RuntimeLibrary: MultiThreadedDebugDLL
+      BufferSecurityCheck: true
+    Link:
+      AdditionalDependencies:
+      - blue_d.lib
+      - version.lib
+      - msvcrtD.lib
+      - msvcprtD.lib
+      - python27_d.lib
+
+  ReleaseBase:
+    General:
+      IntDir: ../temp/$(ProjectName)/$(Platform)/$(Configuration)/$(PlatformToolset)/
+      OutDir: ../../autobuild/$(ProjectName)/$(Platform)/$(PlatformToolset)/
+    ClCompile:
+      PreprocessorDefinitions:
+      - NDEBUG
+      Optimization: MaxSpeed
+      WholeProgramOptimization: True
+      RuntimeLibrary: MultiThreadedDLL
+    Link:
+      # Needed (to avoid warnings) when using WholeProgramOptimization
+      LinkTimeCodeGeneration: UseLinkTimeCodeGeneration
+      AdditionalDependencies:
+      - blue.lib
+      - version.lib
+      - msvcrt.lib
+      - msvcprt.lib
+      - python27.lib
+
+
+# NB: The original "db.vxcproj" file (which I'm try to "recreate" via this "ccpproj" file)
+#     only had the 4 basic Win32/Win64 Debug/Release config combinations
+#
+#     The other configs are not scrictly necessary, but might be useful in some respects...
+#     e.g. although we don't ever *use* them, the MacOS configs allow us to build under "clang",
+#     which can sometimes detect code problems that the MS compiler does not.
+# 
+Configurations:
+  Debug|Win32,x64:
+    BaseConfigurations:
+    - DebugBase
+    General: 
+      TargetName: $(ProjectName)_d
+
+  Debug|Linux32,Linux64,Mac32,Mac64:
+    BaseConfigurations:
+    - DebugBase
+    General: 
+      TargetName: $(ProjectName)_d
+
+  Release|Win32,x64:
+    BaseConfigurations:
+    - ReleaseBase
+    General:
+      TargetName: $(ProjectName)
+
+  Release|Linux32,Linux64,Mac32,Mac64:
+    BaseConfigurations:
+    - ReleaseBase
+    General:
+      TargetName: $(ProjectName)
+
+  Release_Coverage|Mac32,Mac64:
+    BaseConfigurations:
+    - CodeCoverage
+    General:
+      TargetName: $(ProjectName)_cc
