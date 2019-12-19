@@ -40,20 +40,9 @@ public:
 	~Connection();
 
 	PyObject* GetSchema(CSession& session, bool refresh = false);
-	PyObject* GetProcParams(CSession& session, bool refresh = false);
-
 
 private:
-	static PyObject *GetServerVersionString(CSession &s);
-
-	static PyObject *ProcParams(CSession &s);
-	static PyObject *TableSchema(CSession &s);
-
-	//The New methods use custom SQL calls and are supposedly much faster than the old school stuff.
-	static PyObject *ProcParamsNew8(CSession &s);
-	static PyObject *ProcParamsNew9(CSession &s); //for sqlserver 2005
-	static PyObject *TableSchemaNew(CSession &s);
-
+	static PyObject *EnumerateProcParams(CSession &s);
 };
 
 TYPEDEF_BLUECLASS(Connection);
