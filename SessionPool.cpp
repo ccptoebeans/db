@@ -47,8 +47,6 @@ extern ITaskletTimer *ttimer;
 SessionPool::SessionPool(const ATL::CDataSource &d) :
 	mDataSource(d)
 {
-	InitializeSListHead(&mList);
-	mListSize = 0;
 	mSessionCount = 0;
 	mSessionsInUse = 0;
 	mMaxSessions = 32;
@@ -81,43 +79,44 @@ void SessionPool::Fini()
 
 ATL::CSession *SessionPool::PopList()
 {
-	listEntry *le = static_cast<listEntry*>(InterlockedPopEntrySList(&mList));
-	if (le)
-		InterlockedDecrement(&mListSize);
-	return static_cast<ATL::CSession*>(le); //takes care of NULL
+	std::lock_guard<std::mutex> lock(mMutex);
+	ATL::CSession* session = nullptr;
+	if (!mDeque.empty()) {
+		session = mDeque.front();
+		mDeque.pop_front();
+	}
+	return session;
 }
 
 void SessionPool::PushList(ATL::CSession *s)
 {
 	_ASSERT(s);
-	listEntry *le = static_cast<listEntry*>(s);
-	InterlockedPushEntrySList(&mList, le);
-	InterlockedIncrement(&mListSize);
+	std::lock_guard<std::mutex> lock(mMutex);
+	if (s) {
+		mDeque.push_back(s);
+	}
 }
 
 void SessionPool::FlushList(){
-	listEntry *le = static_cast<listEntry*>(InterlockedFlushSList(&mList));
-	while (le) {
-		InterlockedDecrement(&mListSize);
-		listEntry *next = static_cast<listEntry*>(le->Next);
-		DiscardSession(le);
-		le = next;
+	std::lock_guard<std::mutex> lock(mMutex);
+	for (auto it : mDeque) {
+		DiscardSession(it);
 	}
+	mDeque.clear();
 }
 
 //Create a new session for a DataSource.  This will block
 //a thread.  mSessionCount has already been incremented
 HRESULT SessionPool::NewSession(ATL::CSession* &s)
 {
-	s = 0;
-	listEntry *le = new(listEntry);
-	if (!le)
+	s = new ATL::CSession;
+	if (!s)
 		return ERROR_OUTOFMEMORY;
-	HRESULT hr = le->Open(mDataSource);
-	if (SUCCEEDED(hr))
-		s = static_cast<ATL::CSession *>(le);
-	else
-		delete le;
+	HRESULT hr = s->Open(mDataSource);
+	if (!SUCCEEDED(hr)) {
+		delete s;
+		s = nullptr;
+	}
 	return hr;
 }
 
@@ -126,7 +125,7 @@ void SessionPool::DeleteSession(ATL::CSession *s)
 {
 	_ASSERT(s);
 	s->Close();
-	delete static_cast<listEntry*>(s);
+	delete s;
 	InterlockedDecrement(&mSessionCount);
 }
 
@@ -384,7 +383,7 @@ PyObject *SessionPool::GetStatus()
 	return Py_BuildValue("{sisisi}",
 		"sessionsInUse", mSessionsInUse,
 		"sessionCount", mSessionCount,
-		"freeSessions", mListSize);
+		"freeSessions", mDeque.size());
 }
 
 PyObject *SessionPool::GetSettings()

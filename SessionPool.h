@@ -34,6 +34,8 @@
 
 #include <stacklessio.h>
 #include <atldbcli.h>
+#include <deque>
+#include <mutex>
 
 
 /*
@@ -145,22 +147,15 @@ private:
 		int mN;
 	};
 
-	//The data in the SLIST
-	struct listEntry:
-		public SLIST_ENTRY,
-		public ATL::CSession
-	{};
-
-
 private:
 	const ATL::CDataSource mDataSource;
-	SLIST_HEADER mList;
-	LONG mListSize;		//approx size of mList (this is roughly redundant, mListSize ~ mSessionCount-mSessionsInUse)
 	LONG mSessionCount; //total number of sessions
 	int mSessionsInUse;	//number of sessions in use (tasklets between StartSession and EndSession)
 	BluePy mChannel; //throttling channel
 	ULARGE_INTEGER mNextClean; //When to next perform cleanup
 	volatile bool mAddingIdle;	//used to ensure that only a single "idle" job runs at a time.
+	std::mutex mMutex;
+	std::deque<ATL::CSession*> mDeque;
 	
 public:
 	int mMaxSessions; //maximum number of sessions or 0 for no max
