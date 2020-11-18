@@ -25,7 +25,7 @@ vsPropertySheets:
   - ../manifests/non_ccpproj_manifests.props
 
 Imports:
-  - ../../../vendor/Telemetry/3.0.1.1719/telemetry.yaml
+  - ../../../vendor/telemetry/3.5.0.13/telemetry.yaml
 
 BaseConfigurations:
   DebugBase:
