@@ -35,7 +35,7 @@
 #include <atlstr.h>
 #include <msdadc.h>	// for IDataConvert
 
-#include <stacklessio.h>
+#include <blue/stacklessio.h>
 
 
 extern ITaskletTimer *ttimer;

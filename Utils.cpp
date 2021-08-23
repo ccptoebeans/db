@@ -306,10 +306,10 @@ PyObject* Utilities::SetErr32(int err, const char* format, ...)
 	}
 
 	format = "Msg: %s Desc: %S, Source: %S";
-	size_t len2 = _scprintf(format, msg?msg:"none", desc?desc:L"?", src?src:L"?")+1;
+	size_t len2 = _scprintf( format, msg ? msg : "none", desc ? desc : CStringW( L"?" ), src ? src : CStringW( L"?" ) ) + 1;
 	char *msg2 = new char[len2];
-	if (msg2)
-		sprintf_s(msg2, len2, format, msg?msg:"none", desc?desc:L"?", src?src:L"?");
+	if( msg2 )
+		sprintf_s( msg2, len2, format, msg ? msg : "none", desc ? desc : CStringW( L"?" ), src ? src : CStringW( L"?" ) );
 	PyErr_SetFromWindowsErrWithFilename(err,msg2?msg2:"none");
 
 	delete[] msg2;
@@ -393,10 +393,11 @@ void Utilities::FormatErrorRec(std::vector<std::wstring> &result, ULONG ne, cons
 			hr = sqlerr->GetSQLInfo(&ansierr, &nativeerr);
 			if (SUCCEEDED(hr)) {
 				CStringW msg;
-				msg.Format(L"Source: %s, message: \"s\", sSQLErrorInfo: \"%s\" : %d",
-						   src.m_str, descr.m_str,
-						   ansierr?ansierr:L"<none>",
-						   nativeerr);
+				msg.Format( L"Source: %s, message: \"s\", sSQLErrorInfo: \"%s\" : %d",
+							src.m_str,
+							descr.m_str,
+							ansierr ? ansierr : CStringW( L"<none>" ),
+							nativeerr );
 				result.push_back(std::wstring(msg));
 				continue;
 			}
@@ -404,9 +405,9 @@ void Utilities::FormatErrorRec(std::vector<std::wstring> &result, ULONG ne, cons
 		
 		//the most generic:
 		CStringW msg;
-		msg.Format(L"ErrorInfo: \"%s\" from \"%s\"",
-				   descr?descr:L"<none>",
-				   src?src:L"<none>" );		
+		msg.Format( L"ErrorInfo: \"%s\" from \"%s\"",
+					descr ? descr : CStringW( L"<none>" ),
+					src ? src : CStringW( L"<none>" ) );
 		result.push_back(std::wstring(msg));
 	}
 }

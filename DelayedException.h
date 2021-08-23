@@ -56,9 +56,9 @@ public:
 	const std::string mMsg;
 	ULONG mNErrors;
 	CDBErrorInfo mErrorInfo;
-	std::auto_ptr<DelayedException> mNext;
+	std::shared_ptr<DelayedException> mNext;
 };
-typedef std::auto_ptr<DelayedException> DelayedException_ptr;
+typedef std::shared_ptr<DelayedException> DelayedException_ptr;
 
 #define PYERROR(c, m) return DelayedException::New((c), (m))
 #define PYDBERROR(m) PYERROR(Utilities::DbExc_RuntimeError, (m))

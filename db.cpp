@@ -3,7 +3,7 @@
 //
 // Defines the entry point for the DLL application.
 //
-// Jörundur Sveinn Matthíasson
+// Jï¿½rundur Sveinn Matthï¿½asson
 // (c) CCP march 2001
 //
 
@@ -13,9 +13,8 @@
 #include "NSession.h"
 
 #include <blue/include/Blue.h>
-#include <blue/include/Blue.cxx>
 
-const char* g_moduleName = "db";
+const char* g_moduleName = "_db";
 
 // reduce CRT link 
 extern "C" void _setargv(){}
@@ -30,7 +29,7 @@ void BlueClientStart(HINSTANCE instance)
 	CCP_LOG( "DB Lib starting" );
 	
 	// Init Python related
-	PyObject* module = Py_InitModule("db", NULL);
+	PyObject* module = Py_InitModule( CCP_STRINGIZE( CCP_CONCATENATE( _db , CCP_BUILD_FLAVOR ) ), NULL );
 	PyObject* dict = PyModule_GetDict(module);
 	Utilities::InitUtilities(dict);
 
@@ -65,7 +64,8 @@ BOOL APIENTRY DllMain(HINSTANCE instance, DWORD  reason, LPVOID)
 //--------------------------------------------------------------------
 // initdb - python dll module entry function
 //--------------------------------------------------------------------
-extern "C" void __declspec(dllexport) initdb()
+extern "C" void __declspec(dllexport)
+CCP_CONCATENATE( init_db, CCP_BUILD_FLAVOR )()
 {
 	// Init Blue related
 	BlueClientStart(gInstance);
