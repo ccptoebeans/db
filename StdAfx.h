@@ -35,16 +35,13 @@ using std::exception;
 #include <blue/include/IBluePython.h>
 #include <blue/include/ITaskletTimer.h>
 
-//include SQL Native Client support for 2008
-#define _SQLNCLI_OLEDB_
-#include "sqlncli.h"
+#include "msoledbsql.h"
 
 #include <atlbase.h>
 extern CComModule _Module;
 #include <atlcom.h>
 #include <atldbcli.h>
 #include <oledberr.h>
-#include <sqlncli.h>
 
 
 #endif

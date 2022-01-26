@@ -27,7 +27,7 @@ target_sources(db PRIVATE
 
 target_precompile_headers(db PRIVATE StdAfx.h)
 
-target_link_libraries(db PRIVATE Blue MicrosoftSQLServer version)
+target_link_libraries(db PRIVATE Blue msoledbsql version)
 
 target_include_directories(db
     PRIVATE
