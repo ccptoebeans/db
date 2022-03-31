@@ -3,18 +3,12 @@
 //      are changed infrequently
 //
 
+#pragma once
 #ifndef _DB_STDAFX_H_
 #define _DB_STDAFX_H_
 
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-
 // Insert your headers here
-#define WINVER 0x0500
-#define _WIN32_WINNT 0x0500
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 
 #if (_MSC_VER < 1400 && !_DLL)
