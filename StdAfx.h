@@ -24,7 +24,7 @@ using std::exception;
 
 
 // TODO: reference additional headers your program requires here
-#include "BlueExposure/include/BlueExposure.h"
+#include <BlueExposure.h>
 #include <Blue/include/IBlueOS.h>
 #include <blue/include/IBluePython.h>
 #include <blue/include/ITaskletTimer.h>
