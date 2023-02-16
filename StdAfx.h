@@ -25,9 +25,9 @@ using std::exception;
 
 // TODO: reference additional headers your program requires here
 #include <BlueExposure.h>
-#include <Blue/include/IBlueOS.h>
-#include <blue/include/IBluePython.h>
-#include <blue/include/ITaskletTimer.h>
+#include <IBlueOS.h>
+#include <IBluePython.h>
+#include <ITaskletTimer.h>
 
 #include "msoledbsql.h"
 

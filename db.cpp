@@ -12,7 +12,7 @@
 #include "Utils.h"
 #include "NSession.h"
 
-#include <blue/include/Blue.h>
+#include <Blue.h>
 
 const char* g_moduleName = "_db";
 

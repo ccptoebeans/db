@@ -32,7 +32,7 @@
 #ifndef _SESSIONPOOL_H_
 #define _SESSIONPOOL_H_
 
-#include <blue/stacklessio.h>
+#include <stacklessio.h>
 #include <atldbcli.h>
 #include <deque>
 #include <mutex>

@@ -26,7 +26,7 @@
 #define _NSESSION_H_
 
 #include "Connection.h"
-#include <templates/PyTemplates.h>
+#include "PyTemplates.h"
 #include <stackless_api.h>
 
 #include "SessionPool.h"
@@ -35,7 +35,7 @@
 #include <atlstr.h>
 #include <msdadc.h>	// for IDataConvert
 
-#include <blue/stacklessio.h>
+#include <stacklessio.h>
 
 
 extern ITaskletTimer *ttimer;
