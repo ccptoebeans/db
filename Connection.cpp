@@ -192,7 +192,7 @@ PyObject *Connection::EnumerateProcParams(CSession &session)
 		std::string schemaName = pp.m_szSchema;
 
 		if (schemaName.length() && currSchema != schemaName) {
-			PyObject* schemaO = PyString_FromString(pp.m_szSchema);
+			PyObject* schemaO = PyUnicode_FromString( pp.m_szSchema );
 			PyDict_SetItem(schemas, schemaO, Py_None);
 			Py_DECREF(schemaO);
 			currSchema = schemaName;
@@ -211,18 +211,17 @@ PyObject *Connection::EnumerateProcParams(CSession &session)
 
 					//TODO: Get rid of this python gunk and query it on demand.
 					PyObject *param = PyList_New(7);
-					PyList_SET_ITEM(param, 0, PyString_InternFromString(p.m_szParameterName));
-					PyList_SET_ITEM(param, 1, PyInt_FromLong(p.m_nType));
-					PyList_SET_ITEM(param, 2, PyInt_FromLong(p.m_bIsNullable ? 1 : 0));
-					PyList_SET_ITEM(param, 3, PyInt_FromLong(p.m_nDataType));
-					PyList_SET_ITEM(param, 4, PyInt_FromLong(p.m_nMaxLength));
-					PyList_SET_ITEM(param, 5, PyInt_FromLong(p.m_nPrecision));
+					PyList_SET_ITEM( param, 0, PyUnicode_InternFromString( p.m_szParameterName ) );
+					PyList_SET_ITEM( param, 1, PyLong_FromLong( p.m_nType ) );
+					PyList_SET_ITEM( param, 2, PyLong_FromLong( p.m_bIsNullable ? 1 : 0 ) );
+					PyList_SET_ITEM( param, 3, PyLong_FromLong( p.m_nDataType ) );
+					PyList_SET_ITEM( param, 4, PyLong_FromLong( p.m_nMaxLength ) );
+					PyList_SET_ITEM( param, 5, PyLong_FromLong( p.m_nPrecision ) );
 					PyList_SET_ITEM(param, 6, cobject);
 
 					PyList_SET_ITEM(params, i, param);
 				}
-				
-				PyObject *keyO = PyString_FromString(currName.c_str());
+				PyObject* keyO = PyUnicode_FromString( currName.c_str() );
 				if (!keyO) return 0;
 				if (PyDict_SetItem(procParams, keyO, params)) return 0;
 				Py_DECREF(keyO);

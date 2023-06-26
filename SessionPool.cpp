@@ -402,21 +402,21 @@ bool SessionPool::ApplySettings(PyObject *settings)
 	double d;
 	v = PyDict_GetItemString(settings, "maxSessions");
 	if (v) {
-		i = PyInt_AsLong(v);
+		i = (int)PyLong_AsLong( v );
 		if (i==-1 && PyErr_Occurred()) return false;
 		mMaxSessions = max(0, i);
 	}
 
 	v = PyDict_GetItemString(settings, "minFreeSessions");
 	if (v) {
-		i = PyInt_AsLong(v);
+		i = (int)PyLong_AsLong( v );
 		if (i==-1 && PyErr_Occurred()) return false;
 		mMinFreeSessions = max(0, i);
 	}
 
 	v = PyDict_GetItemString(settings, "maxFreeSessions");
 	if (v) {
-		i = PyInt_AsLong(v);
+		i = (int)PyLong_AsLong( v );
 		if (i==-1 && PyErr_Occurred()) return false;
 		mMaxFreeSessions = max(-1, i);
 	}

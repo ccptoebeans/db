@@ -130,12 +130,9 @@ bool StringStoreElem::ToPython()
 	_ASSERT(!mPython);
 	PyObject *p;
 	if (mUnicode) {
-		p = PyUnicode_FromWideChar(mWData, mElements);
+		p = PyUnicode_FromWideChar( mWData, mElements );
 	} else {
-		p = PyString_FromStringAndSize(mCData, mElements);
-		if (p && mElements < 20)
-			//Intern short python strings from database
-			PyString_InternInPlace(&p);
+		p = PyBytes_FromStringAndSize( mCData, mElements );
 	}
 	if (!p)
 		return false;

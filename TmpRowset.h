@@ -227,9 +227,9 @@ public:
 		if (m) {
 			size_t now;
 			if (sizeof(size_t) == 4)
-				now = PyInt_AsUnsignedLongMask(m);
+				now = PyLong_AsUnsignedLongMask( m );
 			else
-				now = (size_t)PyInt_AsUnsignedLongLongMask(m);
+				now = (size_t)PyLong_AsUnsignedLongLongMask( m );
 			if (now != (size_t)-1)
 				return now;
 		}

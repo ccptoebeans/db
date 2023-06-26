@@ -155,7 +155,7 @@ PyObject *NSession::GetSchema(PyObject *argv)
 	PyObject *refresh = Py_False;
 	if (!PyArg_ParseTuple(argv, "|O:GetSchema", &refresh))
 		return 0;
-	PyObject *ok = GetSchemaB(!!PyObject_IsTrue(refresh));
+	PyObject* ok = GetSchemaB( PyObject_IsTrue( refresh ) );
 	if (!ok)
 		return 0;
 	CCP_ASSERT(mSchema);
@@ -693,17 +693,25 @@ SSIZE_T SQLCommand::GetStringSize(DBPARAMINFO *info, PyObject *params)
 		PyErr_Clear();
 		return -1;
 	}
-	if (PyString_Check(object.o))
-		return PyString_GET_SIZE(object.o);
 	if (PyUnicode_Check(object.o))
 		return PyUnicode_GET_SIZE(object.o);  //return number of wide chars
 
-	if (object.o->ob_type->tp_as_buffer && object.o->ob_type->tp_as_buffer->bf_getreadbuffer) {
-		Py_ssize_t bufflen;
-		object.o->ob_type->tp_as_buffer->bf_getsegcount(object.o, &bufflen);
-		if (bufflen == -1)
-			PyErr_Clear();
-		return bufflen;
+	if( object.o->ob_type->tp_as_buffer )
+	{
+		Py_buffer* view = nullptr;
+		if( object.o->ob_type->tp_as_buffer->bf_getbuffer( object, view, 0 ) )
+		{
+			if( !PyBuffer_IsContiguous( view, 'A' ) )
+			{
+				PyErr_SetString( PyExc_TypeError, "GetStringSize object buffer must be contiguous." );
+				return -1;
+			}
+
+			if( view->len == -1 )
+				PyErr_Clear();
+
+			return view->len;
+		}
 	}
 	return -1;
 }
@@ -777,7 +785,7 @@ bool SQLCommand::SetParamsFromDict(size_t &paramLen, PyObject *pdict)
 template<class T>
 bool SQLCommand::SetPyParamInt(size_t &len, DBORDINAL col, PyObject *value)
 {
-	long l = PyInt_AsLong(value);
+	long l = PyLong_AsLong( value );
 	if (l == -1 && PyErr_Occurred())
 		return false;
 	T v = (T)l;
@@ -863,77 +871,68 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 		return true;}
 		
 	case DBTYPE_STR: {
-		PyObject *tmp = 0;
-		if (PyUnicode_Check(value)) {
-			//Convert using ASCII 
-			PyObject *tmp = PyUnicode_AsASCIIString(value);
-			if (!tmp)
-				return false;
-			value = tmp;
+		if( !PyUnicode_Check( value ) )
+		{
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must be an ASCII string", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
 		}
-		if (!PyString_Check(value)) {
-			Py_XDECREF(tmp);
-			return PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) must be StringType", nparam-1, (const char*)CW2A(GetParamName(nparam))), false;
-		}
-		const char *str = PyString_AS_STRING(value);
+
+		//Convert using ASCII
+		PyObject* valueAsAscii = PyUnicode_AsASCIIString( value );
+		if( !valueAsAscii )
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must be an ASCII string", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
+
+		const char* str = PyBytes_AsString( valueAsAscii );
+
 		if (!SetParamString(nparam, str)) {
-			Py_XDECREF(tmp);
+			Py_DecRef( valueAsAscii );
 			DBLENGTH max;
 			GetParamSize(nparam, &max);
 			return PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) too long, can be at most %d chars", nparam-1, (const char*)CW2A(GetParamName(nparam)), max), false;
 		}
 		/* only the actual string data is sent, not the max column size.  Verified using network packet sniffing */
 		paramLen = strlen(str); //this string is preallocated
-		Py_XDECREF(tmp);
+		Py_DecRef( valueAsAscii );
 		break;}
 	case DBTYPE_BSTR:
 	case DBTYPE_WSTR: {
-		PyObject *tmp = 0;
-		if (PyString_Check(value)) {
-			//assume string is ASCII
-			char *str;
-			Py_ssize_t len;
-			if (PyString_AsStringAndSize(value, &str, &len))
-				return false;
-			tmp = PyUnicode_DecodeASCII(str, len, 0);
-			if (!tmp)
-				return false; //conversion failed
-			value = tmp;
+		if( !PyUnicode_Check( value ) )
+		{
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must be UnicodeType", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
 		}
-		if (!PyUnicode_Check(value)) {
-			Py_XDECREF(tmp);
-			return PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) must be UnicodeType or String", nparam-1, (const char*)CW2A(GetParamName(nparam))), false;
+		wchar_t* str = PyUnicode_AsWideCharString( value, nullptr );
+		if( !str )
+		{
+			return PyErr_Format( DbExc_RuntimeError, "Failed to get wchar from unicode argument %d(%s)", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
 		}
-		Py_UNICODE *str = PyUnicode_AS_UNICODE(value);
 		if (!SetParamString(nparam, str)) {
-			Py_XDECREF(tmp);
 			DBLENGTH max;
 			GetParamSize(nparam, &max);
-			return PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) to long, can be at most %d chars", nparam-1, (const char*)CW2A(GetParamName(nparam)), max/2), false;
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) too long, can be at most %d chars", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ), max / 2 ), false;
 		}
 		paramLen = wcslen(str) * sizeof(wchar_t);
-		Py_XDECREF(tmp);
+		PyMem_Free( str );
 		break;}
 
 	case DBTYPE_BYTES: {
-		if (!value->ob_type->tp_as_buffer || !value->ob_type->tp_as_buffer->bf_getreadbuffer)
+		if( !value->ob_type->tp_as_buffer )
 			return PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) must have buffer interface", nparam-1, (const char*)CW2A(GetParamName(nparam))), false;
-		Py_ssize_t segcount, bufflen;
-		segcount = value->ob_type->tp_as_buffer->bf_getsegcount(value, &bufflen);
+
+		Py_buffer* view = nullptr;
+		if( !value->ob_type->tp_as_buffer->bf_getbuffer( value, view, 0 ) )
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must have buffer interface", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
+
+		if( !PyBuffer_IsContiguous( view, 'A' ) )
+		{
+			return PyErr_Format( PyExc_TypeError, "Buffer argument %d(%s) must be contiguous", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
+		}
 		DBLENGTH dblen;
 		GetParamSize(nparam, &dblen);
-		if (bufflen> (Py_ssize_t)dblen)
-			return PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) BLOB too large.  is %d, can be at most %d", nparam-1, (const char*)CW2A(GetParamName(nparam)), bufflen, dblen), false;
+		if( view->len > (Py_ssize_t)dblen )
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) BLOB too large.  is %d, can be at most %d", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ), view->len, dblen ), false;
 		char *dest = (char*)GetParam(nparam);
-		for(Py_ssize_t i = 0; i<segcount; i++){
-			void *dataptr;
-			Py_ssize_t seglen = value->ob_type->tp_as_buffer->bf_getreadbuffer(value, i, &dataptr);
-			if (seglen<0) return false;
-			memcpy(dest, dataptr, seglen);
-			dest += seglen;
-		}
-		SetParamLength(nparam, Py_SAFE_DOWNCAST(bufflen, Py_ssize_t, DBLENGTH));
-		SetParamStatus(nparam, bufflen?DBSTATUS_S_OK:DBSTATUS_S_ISNULL);
+		memcpy( dest, view->buf, view->len );
+		SetParamLength( nparam, Py_SAFE_DOWNCAST( view->len, Py_ssize_t, DBLENGTH ) );
+		SetParamStatus( nparam, view->len ? DBSTATUS_S_OK : DBSTATUS_S_ISNULL );
 		paramLen = dblen;
 		break;}
 	case DBTYPE_IUNKNOWN: {
@@ -999,17 +998,24 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 
 
 //A simple Com wrapper for the python buffer
-PythonBuff::PythonBuff(PyObject *obj)
+PythonBuff::PythonBuff( PyObject* obj ) :
+	m_buff( nullptr ),
+	m_size( 0 ),
+	m_pos( 0 ),
+	m_refcount( 0 )
 {
-	size = 0;
-	buff = 0;
-	Py_ssize_t psize;
-	if (obj && obj->ob_type->tp_as_buffer && obj->ob_type->tp_as_buffer->bf_getreadbuffer) {
-		obj->ob_type->tp_as_buffer->bf_getsegcount(obj, &psize);
-		size = psize;
+	Py_buffer* view = nullptr;
+	int result = obj->ob_type->tp_as_buffer->bf_getbuffer( obj, view, 0 );
+
+	if( !PyBuffer_IsContiguous( view, 'A' ) )
+	{
+		PyErr_SetString( PyExc_TypeError, "PythonbBuff object buffer must be contiguous." );
 	}
-	pos = 0;
-	refcount = 1;
+
+	if( result )
+	{
+		m_size = view->len;
+	}
 }
 
 PythonBuff::~PythonBuff()
@@ -1019,12 +1025,13 @@ PythonBuff::~PythonBuff()
 HRESULT WINAPI PythonBuff::Read(void* pv, ULONG cb, ULONG* got)
 {
 	HRESULT hr = S_OK;
-	if (cb > size - pos) { 
-		cb = (ULONG)(size - pos);
+	if( cb > m_size - m_pos )
+	{
+		cb = (ULONG)( m_size - m_pos );
 		hr = S_FALSE;
 	}
-	memcpy(pv, buff+pos, cb);
-	pos += cb;
+	memcpy( pv, m_buff + m_pos, cb );
+	m_pos += cb;
 	if (got)
 		*got = cb;
 	return hr;
@@ -1039,7 +1046,7 @@ HRESULT	WINAPI PythonBuff::QueryInterface(REFIID riid, void** ppv)
 		*ppv = (IUnknown*)(ISequentialStream*)this;
 	else
 		return E_NOINTERFACE;
-	++refcount;
+	++m_refcount;
 	return S_OK;
 }
 

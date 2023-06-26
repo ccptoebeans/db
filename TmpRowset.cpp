@@ -255,8 +255,25 @@ DelayedException *Row::Init(DBLENGTH &recvLen, RowDescriptor const &d, OurAccess
 			break; }
 		case DBTYPE_STR: {
 			char * s = byref ? *(char**)a.GetValue(i+1) : (char*)a.GetValue(i+1);
-			StringStoreElem *elem;
-			DelayedException *e = stringStore.Insert(elem, s, strlen(s));
+
+			//Convert string to wide string so when retrieved the data comes through to Python3 as string, not bytes.
+			PyObject* tmp = PyUnicode_DecodeASCII( s, strlen( s ), nullptr );
+			if( !tmp )
+			{
+				CString msg;
+				msg.Format( "Conversion to unicode failed on column %d(%s)", i, (const char*)CW2A( a.GetColumnName( i + 1 ) ) );
+				return DelayedException::New( msg );
+			}
+			wchar_t* sw = PyUnicode_AsWideCharString( tmp, nullptr );
+			if( !sw )
+			{
+				CString msg;
+				msg.Format( "Failed to retrieve wide string from unicode object on column %d(%s)", i, (const char*)CW2A( a.GetColumnName( i + 1 ) ) );
+				return DelayedException::New( msg );
+			}
+			StringStoreElem* elem;
+			DelayedException* e = stringStore.Insert( elem, sw, wcslen( sw ) );
+			Py_DecRef( tmp );
 			if (e)
 				return e;
 			SetData(d, elem, i);
@@ -349,7 +366,7 @@ PyObject *Row::ToPython(const RowDescriptor &rd, PyObject *pyrd, ToPythonCtxt &c
 	//storing the method name here saves us loads of time in large rowsets
 	static PyObject *method = 0;
 	if (!method) {
-		method = PyString_InternFromString("DBRow");
+		method = PyUnicode_InternFromString( "DBRow" );
 		if (!method)
 			return 0;
 	}
@@ -503,7 +520,7 @@ PyObject *TmpRowsetList::ToPython(ToPythonCtxt &ctxt)
 {
 	int len = (int)mRowsets.size();
 	if (!len)
-		return PyInt_FromLong(mProcResult);
+		return PyLong_FromLong( mProcResult );
 
 	ctxt.mLastPyBytes = ctxt.GetMem();
 	BluePyList list(len);

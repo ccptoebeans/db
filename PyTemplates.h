@@ -304,7 +304,7 @@ struct PyXObject : public PyObject, public PyXThunker<T>
 			0,                  /* tp_init */
 			0,                  /* tp_alloc */
 			0,					/* tp_new */
-			_PyObject_Del,                  /* tp_free */
+			PyObject_Del,       /* tp_free */
 		};
 
 		static bool postInitialized = false;

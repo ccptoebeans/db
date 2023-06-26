@@ -24,20 +24,29 @@ extern "C" void _setenvp(){}
 //--------------------------------------------------------------------
 // BlueClientStart
 //--------------------------------------------------------------------
-void BlueClientStart(HINSTANCE instance)
+static struct PyModuleDef ModuleDef = {
+	PyModuleDef_HEAD_INIT,
+	CCP_STRINGIZE( CCP_CONCATENATE( _db, CCP_BUILD_FLAVOR ) ),
+	"",
+	-1,
+	NULL
+};
+
+PyObject* BlueClientStart( HINSTANCE instance )
 {
 	CCP_LOG( "DB Lib starting" );
 	
 	// Init Python related
-	PyObject* module = Py_InitModule( CCP_STRINGIZE( CCP_CONCATENATE( _db , CCP_BUILD_FLAVOR ) ), NULL );
+	PyObject* module = PyModule_Create( &ModuleDef );
 	PyObject* dict = PyModule_GetDict(module);
 	Utilities::InitUtilities(dict);
 
 #define INSERT(name, object) \
     if (PyDict_SetItemString(dict, name, (PyObject*)object) < 0)\
-        return
+        return nullptr;
 
 	INSERT("NSession", NSession::GetType());
+	return module;
 }
 
 static HINSTANCE gInstance = NULL;
@@ -64,10 +73,11 @@ BOOL APIENTRY DllMain(HINSTANCE instance, DWORD  reason, LPVOID)
 //--------------------------------------------------------------------
 // initdb - python dll module entry function
 //--------------------------------------------------------------------
-extern "C" void __declspec(dllexport)
-CCP_CONCATENATE( init_db, CCP_BUILD_FLAVOR )()
+extern "C" __declspec( dllexport ) PyObject* 
+CCP_CONCATENATE( PyInit__db, CCP_BUILD_FLAVOR )()
 {
 	// Init Blue related
-	BlueClientStart(gInstance);
+	PyObject* module = BlueClientStart( gInstance );
 	CoInitialize(0);
+	return module;
 }

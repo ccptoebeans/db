@@ -110,18 +110,17 @@ public:
 	PYTHON_GETSET_END()
 	PYTHON_MEMBERS_BEGIN()
         PYTHON_MEMBER( (char*)"blobSizeLimit", T_INT, mBlobSizeLimit, 0)
-		PYTHON_MEMBER( (char*)"lastWallclockTime", T_DOUBLE, mLastWallclockTime, RO)
-		PYTHON_MEMBER( (char*)"lastKernelTime", T_DOUBLE, mLastKernelTime, RO)
-		PYTHON_MEMBER( (char*)"lastUserTime", T_DOUBLE, mLastUserTime, RO)
+		PYTHON_MEMBER( (char*)"lastWallclockTime", T_DOUBLE, mLastWallclockTime, READONLY)
+		PYTHON_MEMBER( (char*)"lastKernelTime", T_DOUBLE, mLastKernelTime, READONLY)
+		PYTHON_MEMBER( (char*)"lastUserTime", T_DOUBLE, mLastUserTime, READONLY)
 		PYTHON_MEMBER( (char*)"beNiceEvery", T_INT, mBeNiceEvery, 0)
 		PYTHON_MEMBER( (char*)"allowSync", T_INT, mAllowSync, 0)
 		PYTHON_MEMBER( (char*)"timerDetail", T_INT, mTimerDetail, 0)
-		PYTHON_MEMBER( (char*)"lastStringReuse", T_INT, mLastStringReuse, RO)
+		PYTHON_MEMBER( (char*)"lastStringReuse", T_INT, mLastStringReuse, READONLY)
 	PYTHON_MEMBERS_END()
 
 	static bool InitType(PyTypeObject *type) 
 	{
-		type->tp_flags |= Py_TPFLAGS_HAVE_WEAKREFS;
 		type->tp_weaklistoffset = offsetof(NSession, mWeakrefList);
 		return true;
 	}
@@ -221,26 +220,34 @@ class PythonBuff : public ISequentialStream
 public:
 	PythonBuff(PyObject *);
 	~PythonBuff();
-	bool Valid() const {return !!buff;}
-	size_t GetLength() const {return size;}
+	bool Valid() const
+	{
+		return m_buff;
+	}
+	size_t GetLength() const
+	{
+		return m_size;
+	}
 
 	HRESULT WINAPI Read(void* pv, ULONG cb, ULONG* got);
 	HRESULT WINAPI Write(const void* pv, ULONG cb, ULONG* written) {return E_NOTIMPL;}
 	
 	HRESULT	WINAPI QueryInterface(REFIID riid, void** ppv);
 	
-	ULONG WINAPI AddRef() {return ++refcount;}
+	ULONG WINAPI AddRef() {return ++m_refcount;}
 
-	ULONG WINAPI Release() {
-		if (--refcount == 0)
+	ULONG WINAPI Release()
+	{
+		if( --m_refcount == 0 )
 			delete this;
-		return refcount;
+		return m_refcount;
 	}
+
 private:
-	char *buff;
-	size_t size;
-	size_t pos;
-	int refcount;
+	char* m_buff;
+	size_t m_size;
+	size_t m_pos;
+	int m_refcount;
 };
 
 
