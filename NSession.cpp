@@ -907,6 +907,7 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 		if (!SetParamString(nparam, str)) {
 			DBLENGTH max;
 			GetParamSize(nparam, &max);
+			PyMem_Free( str );
 			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) too long, can be at most %d chars", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ), max / 2 ), false;
 		}
 		paramLen = wcslen(str) * sizeof(wchar_t);
