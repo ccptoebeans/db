@@ -257,23 +257,24 @@ DelayedException *Row::Init(DBLENGTH &recvLen, RowDescriptor const &d, OurAccess
 			char * s = byref ? *(char**)a.GetValue(i+1) : (char*)a.GetValue(i+1);
 
 			//Convert string to wide string so when retrieved the data comes through to Python3 as string, not bytes.
-			PyObject* tmp = PyUnicode_DecodeASCII( s, strlen( s ), nullptr );
-			if( !tmp )
+			PyObject* sAsUnicode = PyUnicode_DecodeASCII( s, strlen( s ), nullptr );
+			if( !sAsUnicode )
 			{
 				CString msg;
 				msg.Format( "Conversion to unicode failed on column %d(%s)", i, (const char*)CW2A( a.GetColumnName( i + 1 ) ) );
 				return DelayedException::New( msg );
 			}
-			wchar_t* sw = PyUnicode_AsWideCharString( tmp, nullptr );
-			if( !sw )
+			wchar_t* sAsWide = PyUnicode_AsWideCharString( sAsUnicode, nullptr );
+			Py_DecRef( sAsUnicode );
+			if( !sAsWide )
 			{
 				CString msg;
 				msg.Format( "Failed to retrieve wide string from unicode object on column %d(%s)", i, (const char*)CW2A( a.GetColumnName( i + 1 ) ) );
 				return DelayedException::New( msg );
 			}
 			StringStoreElem* elem;
-			DelayedException* e = stringStore.Insert( elem, sw, wcslen( sw ) );
-			Py_DecRef( tmp );
+			DelayedException* e = stringStore.Insert( elem, sAsWide, wcslen( sAsWide ) );
+			PyMem_Free( sAsWide );
 			if (e)
 				return e;
 			SetData(d, elem, i);
