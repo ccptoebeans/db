@@ -696,23 +696,29 @@ SSIZE_T SQLCommand::GetStringSize(DBPARAMINFO *info, PyObject *params)
 	if (PyUnicode_Check(object.o))
 		return PyUnicode_GET_SIZE(object.o);  //return number of wide chars
 
-	if( object.o->ob_type->tp_as_buffer )
+	if( PyObject_CheckBuffer( object.o ) )
 	{
-		Py_buffer* view = nullptr;
-		if( object.o->ob_type->tp_as_buffer->bf_getbuffer( object, view, 0 ) )
+		Py_buffer view;
+
+		if( PyObject_GetBuffer( object.o, &view, 0 ) )
 		{
-			if( !PyBuffer_IsContiguous( view, 'A' ) )
+			if( !PyBuffer_IsContiguous( &view, 'A' ) )
 			{
+				PyBuffer_Release( &view );
 				PyErr_SetString( PyExc_TypeError, "GetStringSize object buffer must be contiguous." );
 				return -1;
 			}
+			Py_ssize_t bufferLength = view.len;
 
-			if( view->len == -1 )
+			PyBuffer_Release( &view );	//Hawk slower than original
+
+			if( bufferLength == -1 )
 				PyErr_Clear();
 
-			return view->len;
+			return bufferLength;
 		}
 	}
+
 	return -1;
 }
 
@@ -915,28 +921,41 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 		break;}
 
 	case DBTYPE_BYTES: {
-		if( !value->ob_type->tp_as_buffer )
-			return PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) must have buffer interface", nparam-1, (const char*)CW2A(GetParamName(nparam))), false;
-
-		Py_buffer* view = nullptr;
-		if( !value->ob_type->tp_as_buffer->bf_getbuffer( value, view, 0 ) )
-			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must have buffer interface", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
-
-		if( !PyBuffer_IsContiguous( view, 'A' ) )
+		if (!PyObject_CheckBuffer(value))
 		{
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must have buffer interface", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
+		}
+
+		Py_buffer view;
+		
+		if (PyObject_GetBuffer(value, &view, 0) != 0)
+		{
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must have buffer interfac", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
+		}
+		
+		if( !PyBuffer_IsContiguous( &view, 'A' ) )
+		{
+			PyBuffer_Release(&view);
 			return PyErr_Format( PyExc_TypeError, "Buffer argument %d(%s) must be contiguous", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
 		}
+		
 		DBLENGTH dblen;
-		GetParamSize(nparam, &dblen);
-		if( view->len > (Py_ssize_t)dblen )
-			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) BLOB too large.  is %d, can be at most %d", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ), view->len, dblen ), false;
-		char *dest = (char*)GetParam(nparam);
-		memcpy( dest, view->buf, view->len );
-		SetParamLength( nparam, Py_SAFE_DOWNCAST( view->len, Py_ssize_t, DBLENGTH ) );
-		SetParamStatus( nparam, view->len ? DBSTATUS_S_OK : DBSTATUS_S_ISNULL );
+		GetParamSize( nparam, &dblen );
+		if( view.len > (Py_ssize_t)dblen )
+		{
+			PyBuffer_Release(&view);
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) BLOB too large.  is %d, can be at most %d", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ), view.len, dblen ), false;
+		}
+
+		char* dest = (char*)GetParam( nparam );
+		memcpy( dest, view.buf, view.len );
+		SetParamLength( nparam, Py_SAFE_DOWNCAST( view.len, Py_ssize_t, DBLENGTH ) );
+		SetParamStatus( nparam, view.len ? DBSTATUS_S_OK : DBSTATUS_S_ISNULL );
 		paramLen = dblen;
+		PyBuffer_Release(&view);
 		break;}
 	case DBTYPE_IUNKNOWN: {
+		//Note PythonBuff appears to be broken, it can never be Valid.
 		PythonBuff *pbuff = new PythonBuff(value);
 		if (!pbuff)
 			return PyErr_NoMemory(), false;
@@ -999,24 +1018,37 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 
 
 //A simple Com wrapper for the python buffer
+//NOTE PythonBuff appears to be broken, m_buff will always be nullptr so Valid will always return false
 PythonBuff::PythonBuff( PyObject* obj ) :
 	m_buff( nullptr ),
 	m_size( 0 ),
 	m_pos( 0 ),
 	m_refcount( 0 )
 {
-	Py_buffer* view = nullptr;
-	int result = obj->ob_type->tp_as_buffer->bf_getbuffer( obj, view, 0 );
-
-	if( !PyBuffer_IsContiguous( view, 'A' ) )
+	if (!PyObject_CheckBuffer(obj))
 	{
+		PyErr_SetString( PyExc_TypeError, "Object passed to PythonBuf must be a PythonbBuff object." );
+		return;
+	}
+
+	Py_buffer view;
+
+	if (PyObject_GetBuffer(obj, &view, 0) != 0)
+	{
+		PyErr_Format( PyExc_TypeError, "Object passed to PythonBuf must have buffer interface");
+		return;
+	}
+
+	if( !PyBuffer_IsContiguous( &view, 'A' ) )
+	{
+		PyBuffer_Release(&view);
 		PyErr_SetString( PyExc_TypeError, "PythonbBuff object buffer must be contiguous." );
+		return;
 	}
 
-	if( result )
-	{
-		m_size = view->len;
-	}
+	m_size = view.len;
+	PyBuffer_Release(&view);
+	
 }
 
 PythonBuff::~PythonBuff()

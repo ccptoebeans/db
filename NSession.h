@@ -222,7 +222,7 @@ public:
 	~PythonBuff();
 	bool Valid() const
 	{
-		return m_buff;
+		return m_buff != nullptr;
 	}
 	size_t GetLength() const
 	{
