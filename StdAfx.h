@@ -37,5 +37,9 @@ extern CComModule _Module;
 #include <atldbcli.h>
 #include <oledberr.h>
 
+#ifdef TEST
+	#include "MockAccessor.h"
+#endif
+
 
 #endif

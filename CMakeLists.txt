@@ -23,24 +23,36 @@ if(WIN32)
             BlockAllocator.cpp
             Connection.cpp
             Connection_Blue.cpp
+            ColumnDescriptor.cpp
             db.cpp
             DelayedException.cpp
             NSession.cpp
+            PythonBuff.cpp
+            Row.cpp
+            RowDescriptor.cpp
             SessionPool.cpp
             StdAfx.cpp
             StringStore.cpp
+            SqlCommand.cpp
             TmpRowset.cpp
             Utils.cpp
     )
     target_sources(db PRIVATE
+            Accessor.h
             autoversion.h
             Connection.h
+            ColumnDescriptor.h
             DelayedException.h
             NSession.h
+            OurAccessor.h
+            PythonBuff.h
             resource.h
+            Row.h
+            RowDescriptor.h
             SessionPool.h
             StdAfx.h
             StringStore.h
+            SqlCommand.h
             TmpRowset.h
             Utils.h
             version.h
@@ -56,6 +68,14 @@ if(WIN32)
 
     target_compile_definitions(db PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
     set_target_properties(db PROPERTIES OUTPUT_NAME "_db")
+
+    if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+        option(BUILD_TESTING "Build tests. Enabled by default." ON)
+        include(CTest)
+        if(BUILD_TESTING)
+            add_subdirectory(tests)
+        endif()
+    endif()
 
     # Provide an install target iff this is the top level project only
     if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
