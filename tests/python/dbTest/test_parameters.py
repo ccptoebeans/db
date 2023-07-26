@@ -3,6 +3,8 @@ import collections
 import blue
 import sys
 import db
+sys.modules["dbTest"] = blue.LoadExtension("_dbTest")
+import dbTest
 
 # The following test data was selected in order to test
 # * python input and output types
@@ -39,35 +41,35 @@ MIN_FRACTION = 0
 
 # DBTYPE_BOOL
 # boolean value
-DBTYPE_BOOL = 11
+DBTYPE_BOOL = dbTest.dbType.BOOL
 
 # DBTYPE_I1
 # one-byte signed integer
-DBTYPE_I1_TYPE_ID = 16
+DBTYPE_I1_TYPE_ID = dbTest.dbType.I1
 DBTYPE_I1_MAX = 127
 DBTYPE_I1_MIN = -128
 
 # DBTYPE_UI1
 # one-byte, unsigned integer
-DBTYPE_UI1_TYPE_ID = 17
+DBTYPE_UI1_TYPE_ID = dbTest.dbType.UI1
 DBTYPE_UI1_MAX = 255
 DBTYPE_UI1_MIN = 0
 
 # DBTYPE_I2
 # two-byte signed integer
-DBTYPE_I2_TYPE_ID = 2
+DBTYPE_I2_TYPE_ID = dbTest.dbType.I2
 DBTYPE_I2_MAX = 32767
 DBTYPE_I2_MIN = -32768
 
 # DBTYPE_UI2
 # two-byte unsigned integer
-DBTYPE_UI2_TYPE_ID = 18
+DBTYPE_UI2_TYPE_ID = dbTest.dbType.UI2
 DBTYPE_UI2_MAX = 65535
 DBTYPE_UI2_MIN = 0
 
 # DBTYPE_I4
 # four-byte signed integer
-DBTYPE_I4_TYPE_ID = 3
+DBTYPE_I4_TYPE_ID = dbTest.dbType.I4
 DBTYPE_I4_MAX = 2147483647
 DBTYPE_I4_MIN = -2147483648
 
@@ -76,33 +78,33 @@ DBTYPE_I4_MIN = -2147483648
 # Note: DBTYPE_UI4_MAX Should be 4294967295 and DBTYPE_UI4_MIN should be 0
 # a bug in PyRowSet.cpp in blue where value is read as PyLong_FromLong rather than PyLong_FromUnsignedLong causes this
 # bug has always been present
-DBTYPE_UI4_TYPE_ID = 19
+DBTYPE_UI4_TYPE_ID = dbTest.dbType.UI4
 DBTYPE_UI4_MAX = 2147483647 
 DBTYPE_UI4_MIN = -2147483648
 
 # DBTYPE_I8
 # eight-byte signed integer
-DBTYPE_I8_TYPE_ID = 20
+DBTYPE_I8_TYPE_ID = dbTest.dbType.I8
 DBTYPE_I8_MAX = 9223372036854775807
 DBTYPE_I8_MIN = -9223372036854775808
 
 # DBTYPE_FILETIME
 # 64 bit value - Test max storage capacity
-DBTYPE_FILETIME_TYPE_ID = 64
+DBTYPE_FILETIME_TYPE_ID = dbTest.dbType.FILETIME
 
 # DBTYPE_UI8
 # eight-byte, unsigned integer
-DBTYPE_UI8_TYPE_ID = 21
+DBTYPE_UI8_TYPE_ID = dbTest.dbType.UI8
 DBTYPE_UI8_MAX = 18446744073709551615
 DBTYPE_UI8_MIN = 0
 
 # DBTYPE_R4
 # single-precision floating-point value
-DBTYPE_R4_TYPE_ID = 4
+DBTYPE_R4_TYPE_ID = dbTest.dbType.R4
 
 # DBTYPE_R8
 # double-precision floating-point value
-DBTYPE_R8_TYPE_ID = 5
+DBTYPE_R8_TYPE_ID = dbTest.dbType.R8
 DBTYPE_R8_VALID = 0.12345678912345
 DBTYPE_R8_MAX = sys.float_info.max
 DBTYPE_R8_MIN = sys.float_info.min
@@ -110,55 +112,54 @@ DBTYPE_R8_MIN = sys.float_info.min
 # DBTYPE_CY
 # LARGE_INTEGER, Currency is a fixed-point number with four digits to the right of the decimal point. It is stored in an eight-byte signed integer, scaled by 10,000.
 # NOTE: Codebase currently truncates to 2DP valid value test changed accordingly
-DBTYPE_CY_TYPE_ID = 6
+DBTYPE_CY_TYPE_ID = dbTest.dbType.CY
 DBTYPE_CY_VALID_VALUE = 12.12
 DBTYPE_CY_INVALID_VALUE = 12.12345
 
 # DBTYPE_STR
 # null-terminated ANSI/DBCS character string
-DBTYPE_STR_TYPE_ID = 129
+DBTYPE_STR_TYPE_ID = dbTest.dbType.STR
 
 # DBTYPE_BSTR
 # pointer to a BSTR, as in Automation: Typedef WCHAR * BSTR;
-DBTYPE_BSTR_TYPE_ID = 8
+DBTYPE_BSTR_TYPE_ID = dbTest.dbType.BSTR
 
 # DBTYPE_WSTR
 # null-terminated Unicode character string
-DBTYPE_WSTR_TYPE_ID = 130
+DBTYPE_WSTR_TYPE_ID = dbTest.dbType.WSTR
 
 # DBTYPE_BYTES
-# null-terminated Unicode character string
-DBTYPE_BYTES_TYPE_ID = 128
+# A binary data value. That is, an array of bytes
+DBTYPE_BYTES_TYPE_ID = dbTest.dbType.BYTES
 DBTYPE_BYTES_VALID = bytes([0x00,0x01,0x02,0x03,0x04])
 
 # DBTYPE_IUNKNOWN
 # pointer to an IUnknown interface on a COM object
-DBTYPE_IUNKNOWN_TYPE_ID = 13
+DBTYPE_IUNKNOWN_TYPE_ID = dbTest.dbType.IUNKNOWN
 DBTYPE_IUNKNOWN_VALID = bytes([0x00,0x01,0x02,0x03,0x04])
 
 # DBTYPE_DBTIMESTAMP
 # Takes a DBTYPE_FILETIME and converts to DBTYPE_DBTIMESTAMP to store in db. Converts back to DBTYPE_FILETIME on retrival
 # Format stores Year, Month, Day, hour, minute, second, fraction
-DBTYPE_DBTIMESTAMP_TYPE_ID = 135
+DBTYPE_DBTIMESTAMP_TYPE_ID = dbTest.dbType.DBTIMESTAMP
 
 # DBTYPE_DBDATE
 # Takes a DBTYPE_FILETIME and converts to DBTYPE_DBDATE to store in db. Converts back to DBTYPE_FILETIME on retrival
 # Format stores Year Month day, extra information will be lost
-DBTYPE_DBDATE_TYPE_ID = 133
+DBTYPE_DBDATE_TYPE_ID = dbTest.dbType.DBDATE
 
 # DBTYPE_DBTIME2
 # Takes a DBTYPE_FILETIME and converts to DBTYPE_DBTIME2 to store in db. Converts back to DBTYPE_FILETIME on retrival
 # Format Stores Hour Minute second fraction
-DBTYPE_DBTIME2_TYPE_ID = 145
+DBTYPE_DBTIME2_TYPE_ID = dbTest.dbType.DBTIME2
 
 #DBTYPE_INVALID
-DBTYPE_INVALID_TYPE_ID = -1
+DBTYPE_INVALID_TYPE_ID = dbTest.dbType.INVALID
 
 class DbUnitTests(unittest.TestCase):
 
     def setUp(self):
-        sys.modules["dbTest"] = blue.LoadExtension("_dbTest")
-        import dbTest
+        
         self.testTools = dbTest.TestTools()
         print("Set up done")
 
@@ -429,7 +430,7 @@ class DbUnitTests(unittest.TestCase):
             val = self.testTools.TestParameter(dbTypeID,"string")
 
     def testDbTypeFILETIME(self):
-        print("Test type DBTYPE_FILETIME, goes into db as signed __int64 but read out as unsigned. I don't believe this would have an effect")
+        print("Test type DBTYPE_FILETIME")
 
         #Set db type for test
         dbTypeID = DBTYPE_FILETIME_TYPE_ID
