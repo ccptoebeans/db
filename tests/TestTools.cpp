@@ -38,6 +38,7 @@ PyObject* TestTools::TestParameter( int db_type, PyObject* value )
 
 	if(!mockNSession.isValid())
 	{
+		PyErr_SetString( PyExc_RuntimeError, "Failed to create MockNSession" );
 		return nullptr;
 	}
 
