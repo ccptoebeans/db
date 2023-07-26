@@ -26,6 +26,12 @@ bool MockSqlCommand::SetPyParamTest( DBTYPE parameter_type, PyObject* val, void*
 	data_length = len;
 	
 	blob = malloc( data_length );
+	if(!blob)
+	{
+		PyErr_SetString( PyExc_RuntimeError, "Failed to create memory to store retrieved data from mockdb." );
+		return false;
+	}
+
 	memcpy( blob, GetParam( 0 ), data_length );
 
 	return true;
