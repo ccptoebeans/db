@@ -30,9 +30,12 @@ public:
 	MockNSession();
 	~MockNSession();
 
-	virtual CComPtr<IDataConvert> converter() override;
+	bool isValid();
 
-	CComPtr<IDataConvert> mConv;
+private:
+
+	bool m_valid;
+
 };
 
 #endif

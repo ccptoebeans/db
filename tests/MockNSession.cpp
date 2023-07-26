@@ -2,9 +2,14 @@
 
 extern "C" const CLSID CLSID_DataConvert;
 
-MockNSession::MockNSession()
+MockNSession::MockNSession():
+	m_valid(true)
 {
 	HRESULT hr = mConv.CoCreateInstance( CLSID_DataConvert, NULL, CLSCTX_INPROC_SERVER );
+	if (FAILED(hr))
+	{
+		m_valid = false;
+	}
 }
 
 MockNSession::~MockNSession()
@@ -12,7 +17,7 @@ MockNSession::~MockNSession()
 
 }
 
-CComPtr<IDataConvert> MockNSession::converter()
+bool MockNSession::isValid()
 {
-	return mConv;
+	return m_valid;
 }

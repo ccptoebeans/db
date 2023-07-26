@@ -36,6 +36,11 @@ PyObject* TestTools::TestParameter( int db_type, PyObject* value )
 	// Creates an empty NSession which creates a valid conversion member
 	MockNSession mockNSession;
 
+	if(!mockNSession.isValid())
+	{
+		return nullptr;
+	}
+
 	// Create a MockSqlCommand which will process pyobject input via MockAccessor
 	// based on db_type
 	MockSqlCommand test(&mockNSession);

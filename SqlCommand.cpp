@@ -656,7 +656,7 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 		if (filetime == -1 && PyErr_Occurred())
 			return false;
 		DBLENGTH dstlen;
-		HRESULT hr = mNSession->converter()->DataConvert(
+		HRESULT hr = mNSession->mConv->DataConvert(
 			DBTYPE_FILETIME, type,
 			sizeof(filetime), &dstlen,
 			&filetime, GetParam(nparam),

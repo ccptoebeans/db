@@ -96,11 +96,6 @@ public:
 		return true;
 	}
 
-	virtual CComPtr<IDataConvert> converter()
-	{
-		return mConv;
-	}
-
 	CComPtr<IDataConvert> mConv; //for data conversion
 	BluePy mBlue; //shortcut to blue module
 	BluePy mYield; //shortcut to blye.pyos.Synchro.Yield

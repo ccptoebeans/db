@@ -183,7 +183,7 @@ DelayedException* Row::Init( DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR
 			DBSTATUS dststatus;
 			FILETIME ftime;
 			
-			hr = d.mNSession->converter()->DataConvert(
+			hr = d.mNSession->mConv->DataConvert(
 				dbtype & 0xff,
 				DBTYPE_FILETIME,
 				len,
