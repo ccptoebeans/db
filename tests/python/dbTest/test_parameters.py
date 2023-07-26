@@ -4,6 +4,10 @@ import blue
 import sys
 import db
 
+# The following test data was selected in order to test
+# * python input and output types
+# * That the full storage capacity for the db type is usable
+
 # Test types
 A_STRING = "TestString"
 SMALL_NUMBER = 10
