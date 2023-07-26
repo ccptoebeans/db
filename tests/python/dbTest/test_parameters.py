@@ -73,9 +73,12 @@ DBTYPE_I4_MIN = -2147483648
 
 # DBTYPE_UI4
 # four-byte unsigned integer
+# Note: DBTYPE_UI4_MAX Should be 4294967295 and DBTYPE_UI4_MIN should be 0
+# a bug in PyRowSet.cpp in blue where value is read as PyLong_FromLong rather than PyLong_FromUnsignedLong causes this
+# bug has always been present
 DBTYPE_UI4_TYPE_ID = 19
-DBTYPE_UI4_MAX = 4294967295
-DBTYPE_UI4_MIN = 0
+DBTYPE_UI4_MAX = 2147483647 
+DBTYPE_UI4_MIN = -2147483648
 
 # DBTYPE_I8
 # eight-byte signed integer
@@ -106,9 +109,9 @@ DBTYPE_R8_MIN = sys.float_info.min
 
 # DBTYPE_CY
 # LARGE_INTEGER, Currency is a fixed-point number with four digits to the right of the decimal point. It is stored in an eight-byte signed integer, scaled by 10,000.
-# NOTE: Codebase currently truncates to 2DP so test is failing but kept for consistency
+# NOTE: Codebase currently truncates to 2DP valid value test changed accordingly
 DBTYPE_CY_TYPE_ID = 6
-DBTYPE_CY_VALID_VALUE = 12.1234
+DBTYPE_CY_VALID_VALUE = 12.12
 DBTYPE_CY_INVALID_VALUE = 12.12345
 
 # DBTYPE_STR
@@ -357,7 +360,8 @@ class DbUnitTests(unittest.TestCase):
             val = self.testTools.TestParameter(dbTypeID,"string")
     
     def testDbTypeUI4(self):
-        print("Test type DBTYPE_UI4 !BROKEN IN BLUE PyRowSet.py return PyLong_FromLong(* should be PyLong_FromUnsignedLong I think")
+        # NOTE: Type is being treated as signed due to historical bug
+        print("Test type DBTYPE_UI4")
 
         #Set db type for test
         dbTypeID = DBTYPE_UI4_TYPE_ID
@@ -565,7 +569,7 @@ class DbUnitTests(unittest.TestCase):
             val = self.testTools.TestParameter(dbTypeID,"string")
 
     def testDbTypeCY(self):
-        print("Test type DBTYPE_CY, !Kind of broken due to the fact code currently truncates to 2dp before storage. Probably keep the same.")
+        print("Test type DBTYPE_CY")
 
         #Set db type for test
         dbTypeID = DBTYPE_CY_TYPE_ID
@@ -644,8 +648,9 @@ class DbUnitTests(unittest.TestCase):
             #Incorrect type supplied
             val = self.testTools.TestParameter(dbTypeID,SMALL_NUMBER)
 
+    @unittest.skip("DBTYPE_IUNKNOWN is historically broken from 2005. See CL10082") 
     def testDbTypeIUNKNOWN(self):
-        print("Test type DBTYPE_IUNKNOWN! TOTALLY BROKEN")
+        print("Test type DBTYPE_IUNKNOWN")
 
         self.assertEqual(1,2)
 

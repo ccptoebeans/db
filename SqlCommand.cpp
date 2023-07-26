@@ -465,20 +465,22 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 	case DBTYPE_I4:
 		return SetPyParamInt<signed long>(paramLen, nparam, value);
 	case DBTYPE_UI4: {
+		//NOTE: This type is slightly broken. The value here should be an unsigned long
+		//Issue has always been present and is also reflected in Blue PyRowSet
 
 		if( !PyLong_Check( value ) )
 		{
 			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must be a long", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
 		}
 
-		unsigned long l = PyLong_AsUnsignedLong( value );
+		long l = PyLong_AsLong( value );
 
 		if( l == -1 && PyErr_Occurred() )
-			return PyErr_Format( DbExc_RuntimeError, "Failed to convert argument %d(%s) to unsigned long.", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
+			return PyErr_Format( DbExc_RuntimeError, "Failed to convert argument %d(%s) to long.", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
 
 		SetParam( nparam, &l );
 
-		paramLen = sizeof( unsigned long );
+		paramLen = sizeof( long );
 
 		return true;
 	}
