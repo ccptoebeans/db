@@ -37,10 +37,8 @@
 #include "StringStore.h"
 #include "BlockAllocator.h"
 #include "RowDescriptor.h"
-#include "OurAccessor.h"
 #include "Row.h"
 #include "Accessor.h"
-
 
 //A temporary thing, use this to locate the place where we are getting error results with no exception
 template <class T>
@@ -51,12 +49,6 @@ void ForceException(T v, const char *msg){
 		PyErr_SetString(PyExc_RuntimeError, s.c_str());
 	}
 }
-
-
-			
-
-
-
 
 class ToPythonCtxt
 {
