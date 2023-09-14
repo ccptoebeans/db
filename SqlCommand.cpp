@@ -324,23 +324,32 @@ SSIZE_T SQLCommand::GetStringSize(DBPARAMINFO *info, PyObject *params)
 	}
 	if (PyUnicode_Check(object.o))
 		return PyUnicode_GET_SIZE(object.o);  //return number of wide chars
-
 	if( object.o->ob_type->tp_as_buffer )
 	{
-		Py_buffer* view = nullptr;
-		if( object.o->ob_type->tp_as_buffer->bf_getbuffer( object, view, 0 ) )
+		if( !PyObject_CheckBuffer( object.o ) )
 		{
-			if( !PyBuffer_IsContiguous( view, 'A' ) )
-			{
-				PyErr_SetString( PyExc_TypeError, "GetStringSize object buffer must be contiguous." );
-				return -1;
-			}
-
-			if( view->len == -1 )
-				PyErr_Clear();
-
-			return view->len;
+			PyErr_SetString( PyExc_TypeError, "Object must have a buffer interface." );
+			return -1;
 		}
+
+		Py_buffer view;
+
+		if( PyObject_GetBuffer( object.o, &view, 0 ) != 0 )
+		{
+			PyErr_SetString( PyExc_TypeError, "Object must have a buffer interface." );
+			return -1;
+		}
+
+		if( !PyBuffer_IsContiguous( &view, 'A' ) )
+		{
+			PyBuffer_Release( &view );
+			PyErr_SetString( PyExc_TypeError, "Object buffer must be contiguous." );
+			return -1;
+		}
+
+		SSIZE_T bufferLength = view.len;
+		PyBuffer_Release( &view );
+		return bufferLength;
 	}
 	return -1;
 }
@@ -609,6 +618,7 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 
 		if( !PyBuffer_IsContiguous( &view, 'A' ) )
 		{
+			PyBuffer_Release( &view );
 			return PyErr_Format( PyExc_TypeError, "Buffer argument %d(%s) must be contiguous", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
 		}
 

@@ -71,26 +71,15 @@ target_compile_definitions(dbTest PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNI
 
 set_target_properties(dbTest PROPERTIES OUTPUT_NAME "_dbTest")
 if(WIN32)
-    set(PYTHON_EXECUTABLE "${BRANCH_ROOT_DIR}/eve/server/pythonInterpreter.bat")
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys;import unittest; print_suite = lambda x: (print(x._exception), sys.exit(1)) if hasattr(x, '_exception') else print(x.id()) if not hasattr(x, '__iter__') else [print_suite(x) for x in x];print_suite(unittest.defaultTestLoader.discover('.'))"
-        OUTPUT_VARIABLE PYTHON_TESTS_STR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_STRIP_TRAILING_WHITESPACE
-        RESULT_VARIABLE PYTHON_TEST_DISCOVERY_RETVAL
-        ERROR_VARIABLE PYTHON_TEST_DISCOVERY_ERRORS
+
+    # Discover and run Python tests as a single CTest test.
+    set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.bat")
+    set(PYTHON_TEST PythonTests)
+    add_test(NAME ${PYTHON_TEST}
+        COMMAND ${PYTHON_INTERPRETER_PATH} -m unittest discover -v
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python
-        )
-    if(${PYTHON_TEST_DISCOVERY_RETVAL})
-        message(FATAL_ERROR "Error encountered during test discovery:\n=== stderr: ===\n${PYTHON_TEST_DISCOVERY_ERRORS}\n=== stdout: ===\n${PYTHON_TESTS_STR}")
-    endif()
-    separate_arguments(PYTHON_TESTS UNIX_COMMAND ${PYTHON_TESTS_STR})
-    foreach(PYTHON_TEST ${PYTHON_TESTS})
-        add_test(NAME ${PYTHON_TEST}
-            COMMAND ${PYTHON_EXECUTABLE} -m unittest -v ${PYTHON_TEST}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python
-        )
-        set_tests_properties(${PYTHON_TEST} PROPERTIES
-            ENVIRONMENT "PYTHONPATH=${BRANCH_ROOT_DIR}/carbon/common/stdlib\\\;$<TARGET_FILE_DIR:dbTest>"
-        )
-    endforeach()
+        COMMAND_EXPAND_LISTS
+    )
+    set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:dbTest>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+
 endif()
