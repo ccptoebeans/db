@@ -433,7 +433,7 @@ bool SQLCommand::SetPyParamInt(size_t &len, DBORDINAL col, PyObject *value)
 		return false;
 	T v = (T)l;
 	if (v != l) {
-		PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) out of range:%d", col, (const char*)CW2A(GetParamName(col)), l);
+		PyErr_Format(DbExc_RuntimeError, "Argument %d(%s) out of range:%lld", col, (const char*)CW2A(GetParamName(col)), l);
 		return false;
 	}
 	SetParam(col, &v);
