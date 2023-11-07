@@ -453,12 +453,6 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 	GetParamType(nparam, &type);
 	switch (type) {
 	case DBTYPE_BOOL: {
-		if( !PyBool_Check( value ) )
-		{
-			//Note that this code path can accept non bool and works fine, so perhaps this could cause issues, but it is safer
-			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must be a bool", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
-		}
-			
 		VARIANT_BOOL p = PyObject_IsTrue(value)?VARIANT_TRUE:VARIANT_FALSE;
 		SetParam(nparam, &p);
 		paramLen = 1;
