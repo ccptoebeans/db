@@ -453,7 +453,14 @@ bool SQLCommand::SetPyParam(size_t &paramLen, DBORDINAL nparam, PyObject *value)
 	GetParamType(nparam, &type);
 	switch (type) {
 	case DBTYPE_BOOL: {
-		VARIANT_BOOL p = PyObject_IsTrue(value)?VARIANT_TRUE:VARIANT_FALSE;
+		int res = PyObject_IsTrue( value );
+
+		if(res == -1)
+		{
+			return PyErr_Format( DbExc_RuntimeError, "Argument %d(%s) must evaluate to a boolean", nparam - 1, (const char*)CW2A( GetParamName( nparam ) ) ), false;
+		}
+		
+		VARIANT_BOOL p = res ? VARIANT_TRUE : VARIANT_FALSE;
 		SetParam(nparam, &p);
 		paramLen = 1;
 		return true; }

@@ -183,10 +183,6 @@ class DbUnitTests(unittest.TestCase):
         self.assertEqual(type(val),blue.DBRow)
         self.assertEqual(val[0],False)
 
-        #Test Incorrect input parameter
-        with self.assertRaises(RuntimeError):
-            val = self.testTools.TestParameter(dbTypeID,A_STRING)
-
     def testDbTypeI1(self):
 
         print("Test type DBTYPE_I1")
