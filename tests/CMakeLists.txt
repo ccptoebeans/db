@@ -74,12 +74,14 @@ if(WIN32)
 
     # Discover and run Python tests as a single CTest test.
     set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.bat")
-    set(PYTHON_TEST PythonTests)
-    add_test(NAME ${PYTHON_TEST}
-        COMMAND ${PYTHON_INTERPRETER_PATH} -m unittest discover -v
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python
-        COMMAND_EXPAND_LISTS
-    )
-    set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:dbTest>\;$<TARGET_FILE_DIR:db>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+    list(APPEND PYTHON_TESTS test_db.py)
+    list(APPEND PYTHON_TESTS test_parameters.py)
+    foreach(PYTHON_TEST ${PYTHON_TESTS})
+        add_test(NAME ${PYTHON_TEST}
+                COMMAND ${PYTHON_INTERPRETER_PATH} ${PYTHON_TEST}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/dbTest
+        )
+        set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:dbTest>\;$<TARGET_FILE_DIR:db>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+    endforeach()
 
 endif()

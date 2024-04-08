@@ -1,8 +1,11 @@
 import unittest
 import collections
-import sys
 import db
 import os
+from test import support
+
+import blue
+import stackless
 
 
 CONNECTION_STRING = os.environ.get('CCP_LOCALDB_CONNECTION_STRING', None)
@@ -81,5 +84,23 @@ class DbUnitTests(unittest.TestCase):
         self.assertEqual(sessionsettings['maxFreeSessions'], targetMaxFreeSessions)
         self.assertEqual(sessionsettings['minFreeSessions'], targetMinFreeSessions)
 
-if __name__ == '__main__':
-    unittest.main()
+
+def main():
+    exc = None
+
+    def wrap_run(testcase):
+        nonlocal exc
+        try:
+            support.run_unittest(testcase)
+        except Exception as e:
+            exc = e
+
+    t = stackless.tasklet(wrap_run)(DbUnitTests)
+    while t.alive:
+        blue.os.Pump()
+    if exc:
+        raise exc
+
+
+if __name__ == "__main__":
+    main()
