@@ -55,10 +55,12 @@ class DbUnitTests(unittest.TestCase):
 
     @unittest.skipIf(not CONNECTION_STRING, "Skipping because it requires a local db") 
     def testGetSessionStatus(self):
+        sessionsettings = self.session.GetSessionSettings()
+        minFreeSessions = sessionsettings['minFreeSessions']
         sessionStatus = self.session.GetSessionStatus()
-        self.assertEqual(sessionStatus['sessionCount'], 1)
+        self.assertEqual(sessionStatus['sessionCount'], minFreeSessions)
         self.assertEqual(sessionStatus['sessionsInUse'], 0)
-        self.assertEqual(sessionStatus['freeSessions'], 1)
+        self.assertEqual(sessionStatus['freeSessions'], minFreeSessions)
 
     @unittest.skipIf(not CONNECTION_STRING, "Skipping because it requires a local db") 
     def testGetSessionSettings(self):
