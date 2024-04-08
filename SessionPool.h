@@ -32,11 +32,12 @@
 #ifndef _SESSIONPOOL_H_
 #define _SESSIONPOOL_H_
 
-#include <stacklessio.h>
+#include <BluePyCpp.h>
 #include <atldbcli.h>
 #include <deque>
 #include <mutex>
 
+#include "TaskletBlockingIO.h"
 
 /*
  * We use a session pool to keep sessions alive.  Each session keeps a connection
@@ -85,8 +86,8 @@ private:
 	//incremented prior.
 	HRESULT NewSession(ATL::CSession* &s);
 	
-	//The same, but with tasklet-blocking boilerplate using
-	//StacklessIO.  This function _will_ infrement mSessionCount
+	//The same, but with tasklet-blocking boilerplate.
+	//This function _will_ increment mSessionCount
 	//since it is called on the main thread.
 	HRESULT TaskletBlockingNewSession(ATL::CSession * &s);
 	
@@ -126,19 +127,19 @@ private:
 	void MarkClean();
 
 	//A IORequest to create and return a new Session
-	struct Request : public IOWorker
+	struct Request : public TaskletBlockingRequest
 	{
 		Request(SessionPoolPtr pool);
 		~Request();
-		void ThreadFunc();
 		HRESULT GetResult(ATL::CSession * &s);
 	
 		SessionPoolPtr mPool;
 		HRESULT mHr;
 		ATL::CSession *mSession;
+	protected:
+		void ThreadFunc() override;
 	}; 
 	//A simple worker thread request to create a new idle session.
-	//stacklessIO doesn't have throw-away IOWorker ops.
 	struct IdleRequest
 	{
 		IdleRequest(SessionPoolPtr pool, int n): mPool(pool), mN(n) {}

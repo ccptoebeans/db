@@ -233,7 +233,7 @@ PyObject *NSession::Execute(PyObject *args)
 
 		//indirect execution (in a worker thread).  must allocate controls stuff on heap, Stackless messes with stack.
 		//otherwise, when the thread runs, this tasklet may be somewhere else, causing a crash
-		IOPtr<Request> req( new Request(this) );
+		auto req = std::make_unique<Request>( this );
 		if (!req)
 			return PyErr_NoMemory();
 

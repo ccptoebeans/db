@@ -20,6 +20,10 @@ using std::exception;
 #define _HAS_EXCEPTIONS 1
 #endif
 
+// Libuv needs to be included before windows.h, or we will get
+// conflicts because of windows.h including winsock and libuv
+// including winsock2.
+#include <uv.h>
 #include <windows.h>
 
 

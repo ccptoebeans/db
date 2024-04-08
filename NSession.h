@@ -35,8 +35,6 @@
 #include <atlstr.h>
 #include <msdadc.h>	// for IDataConvert
 
-#include <stacklessio.h>
-
 #include "SqlCommand.h"
 
 
@@ -115,7 +113,7 @@ private:
 	
 	PyObject *GetSchemaB(bool refresh); //returns our cached schema.
 	
-	struct Request : public IOWorker
+	struct Request : public TaskletBlockingRequest
 	{
 		Request(NSession *ns) : mNSession(ns), mCommand(ns), mSessionKeeper(ns->mSessionPool) {
 			mSession = 0;
@@ -137,7 +135,7 @@ private:
 			mCommand.ReleaseCommand();
 		}
 
-		void ThreadFunc(); //the worker function
+		void ThreadFunc() override; //the worker function
 		void Execute(); //when we do a direct execute
 
 		PyObject *Raise();

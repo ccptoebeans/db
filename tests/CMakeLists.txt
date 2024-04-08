@@ -43,6 +43,8 @@ set(db_sources
     ../StringStore.h
     ../SqlCommand.cpp
     ../SqlCommand.h
+    ../TaskletBlockingIO.cpp
+    ../TaskletBlockingIO.h
     ../TmpRowset.cpp
     ../TmpRowset.h
     ../Utils.cpp
@@ -65,7 +67,7 @@ add_compile_definitions(TEST)
 
 target_include_directories(dbTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-target_link_libraries(dbTest PRIVATE Blue msoledbsql version)
+target_link_libraries(dbTest PRIVATE Blue libuv::uv_a msoledbsql version)
 
 target_compile_definitions(dbTest PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
 

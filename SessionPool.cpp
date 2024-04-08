@@ -234,13 +234,12 @@ HRESULT SessionPool::TaskletBlockingNewSession(ATL::CSession* &s)
 	//but lets not worry.
 	InterlockedIncrement(&mSessionCount);
 	try {
-		IOPtr<Request> req( new Request(this->shared_from_this()) );
+		auto req = std::make_unique<Request>( this->shared_from_this() );
 		req->ExecuteAndWait();
 		return req->GetResult(s);
 	} catch(std::exception) {
 		InterlockedDecrement(&mSessionCount);
 		return E_FAIL;
-		//return CCPUtils::TranslateException(e);
 	}
 }
 
@@ -459,8 +458,18 @@ void SessionPool::Request::ThreadFunc()
 HRESULT SessionPool::Request::GetResult(ATL::CSession* &le)
 {
 	le = mSession;
-	mSession = 0;
-	return mHr;
+	mSession = nullptr;
+	switch( mState )
+	{
+	case TaskletBlockingRequest::DONE:
+		return S_OK;
+	case TaskletBlockingRequest::FAILED:
+		return E_FAIL;
+	case TaskletBlockingRequest::PENDING:
+		return E_PENDING;
+	default:
+		return E_UNEXPECTED;
+	}
 }
 
 //////////////////////////////
