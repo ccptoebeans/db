@@ -61,21 +61,21 @@ SessionPool::SessionPool(const ATL::CDataSource &d) :
 
 bool SessionPool::Init()
 {
-	mChannel = BluePy((PyObject*)PyChannel_New(0));
-	if (!mChannel)
+	mChannel = BluePy( reinterpret_cast<PyObject*>( SchedulerAPI()->PyChannel_New( nullptr ) ) );
+	if( !mChannel )
 		return false;
-	PyChannel_SetPreference((PyChannelObject*)mChannel.o, 1); //sender preference = lazy wakeup
+	SchedulerAPI()->PyChannel_SetPreference( reinterpret_cast<PyChannelObject*>( mChannel.o ), 1 ); //sender preference = lazy wakeup
 	return true;
 }
 
 void SessionPool::Fini()
 {
 	//cleanup on main thread
-	_ASSERT(!mSessionsInUse);
-	_ASSERT(PyChannel_GetBalance((PyChannelObject*)mChannel.o) == 0);
+	_ASSERT( !mSessionsInUse );
+	_ASSERT( SchedulerAPI()->PyChannel_GetBalance( reinterpret_cast<PyChannelObject*>( mChannel.o ) ) == 0 );
 	FlushList();
 	mChannel.Release();
-}		
+}
 
 ATL::CSession *SessionPool::PopList()
 {
@@ -132,16 +132,17 @@ void SessionPool::DeleteSession(ATL::CSession *s)
 bool SessionPool::GetSession(ATL::CSession* &s)
 {
 	LARGE_INTEGER t1, t2;
-	QueryPerformanceCounter(&t1);
-	bool result = GetSession_int(s);
-	QueryPerformanceCounter(&t2);
-	t2.QuadPart-=t1.QuadPart;
-	QueryPerformanceFrequency(&t1);
-	double duration = double(t2.QuadPart)/double(t1.QuadPart);
-	if (duration > 1.0) {
-		CCP_LOGWARN_CH( s_chPool,"NSession took %f to return a session", duration);
-		int s = PyChannel_GetBalance((PyChannelObject*)mChannel.o);
-		CCP_LOGWARN_CH( s_chPool, "Status: nSessions=%d, inUse=%d, nQueue=%d", mSessionCount, mSessionsInUse, -s);
+	QueryPerformanceCounter( &t1 );
+	bool result = GetSession_int( s );
+	QueryPerformanceCounter( &t2 );
+	t2.QuadPart -= t1.QuadPart;
+	QueryPerformanceFrequency( &t1 );
+	double duration = double( t2.QuadPart ) / double( t1.QuadPart );
+	if( duration > 1.0 )
+	{
+		CCP_LOGWARN_CH( s_chPool, "NSession took %f to return a session", duration );
+		int balance = SchedulerAPI()->PyChannel_GetBalance( reinterpret_cast<PyChannelObject*>( mChannel.o ) );
+		CCP_LOGWARN_CH( s_chPool, "Status: nSessions=%d, inUse=%d, nQueue=%d", mSessionCount, mSessionsInUse, -balance );
 	}
 	return result;
 }
@@ -153,10 +154,11 @@ bool SessionPool::GetSession_int(ATL::CSession* &s)
 	//We use a non-strict queue so that we don't cause lock-convoying
 	//(a woken up tasklet must wait until its turn in the runnable queue, meanwhile
 	// the resource would be unavailable)
-	while (mMaxSessions > 0 && mSessionsInUse >= mMaxSessions) {
+	while( mMaxSessions > 0 && mSessionsInUse >= mMaxSessions )
+	{
 		//must wait here
-		BluePy r(PyChannel_Receive((PyChannelObject*)mChannel.o));
-		if (!r)
+		BluePy r( SchedulerAPI()->PyChannel_Receive( reinterpret_cast<PyChannelObject*>( mChannel.o ) ) );
+		if( !r )
 			return false;
 	}
 	++mSessionsInUse;
@@ -204,22 +206,26 @@ bool SessionPool::EndSession()
 //Also, throw away idle sessions.
 bool SessionPool::Pump()
 {
-	if (!mChannel)
+	if( !mChannel )
 		return true; //A late destructor call, after Fini has been called.
-	int balance = PyChannel_GetBalance((PyChannelObject*) mChannel.o);
-	if (balance) {
-		_ASSERT(balance < 0);
+	int balance = SchedulerAPI()->PyChannel_GetBalance( reinterpret_cast<PyChannelObject*>( mChannel.o ) );
+	if( balance )
+	{
+		_ASSERT( balance < 0 );
 		int wakeup;
-		if (mMaxSessions > 0)
-			wakeup = min(-balance, mMaxSessions-mSessionsInUse);
+		if( mMaxSessions > 0 )
+			wakeup = min( -balance, mMaxSessions - mSessionsInUse );
 		else
 			wakeup = -balance;
-		for(int i = 0; i<wakeup; i++) {
+		for( int i = 0; i < wakeup; i++ )
+		{
 			//send does not block, since preference is 1 (sender)
-			if (PyChannel_Send((PyChannelObject*)mChannel.o, Py_None))
+			if( SchedulerAPI()->PyChannel_Send( reinterpret_cast<PyChannelObject*>( mChannel.o ), Py_None ) )
 				return false;
 		}
-	} else {
+	}
+	else
+	{
 		PruneIdle(); //prune only when no one was waiting.
 	}
 	return true;

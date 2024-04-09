@@ -63,8 +63,9 @@ if(WIN32)
 
     find_package(Blue REQUIRED NO_CMAKE_PATH)
     find_package(msoledbsql REQUIRED NO_CMAKE_PATH)
+    find_package(Scheduler REQUIRED NO_CMAKE_PATH)
 
-    target_link_libraries(db PRIVATE Blue msoledbsql version)
+    target_link_libraries(db PRIVATE Scheduler Blue msoledbsql version)
 
     target_compile_definitions(db PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
     set_target_properties(db PROPERTIES OUTPUT_NAME "_db")

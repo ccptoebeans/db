@@ -212,8 +212,8 @@ PyObject *NSession::Execute(PyObject *args)
 	AUTOTASKLET0("DB::NSession::Execute");
 	// threaded or direct mode, based on blocking status 
 
-	PyTaskletObject *current = (PyTaskletObject *)PyStackless_GetCurrent();
-	bool noblock = PyTasklet_IsMain(current) || PyTasklet_GetBlockTrap(current);
+	PyTaskletObject *current = (PyTaskletObject *)SchedulerAPI()->PyScheduler_GetCurrent();
+	bool noblock = SchedulerAPI()->PyTasklet_IsMain(current) || SchedulerAPI()->PyTasklet_GetBlockTrap(current);
 	Py_DECREF(current);
 
 	if (noblock && !mAllowSync)

@@ -322,8 +322,8 @@ SSIZE_T SQLCommand::GetStringSize(DBPARAMINFO *info, PyObject *params)
 		PyErr_Clear();
 		return -1;
 	}
-	if (PyUnicode_Check(object.o))
-		return PyUnicode_GET_SIZE(object.o);  //return number of wide chars
+	if( PyUnicode_Check( object.o ) )
+		return PyUnicode_GET_LENGTH( object.o ); //return number of wide chars
 	if( object.o->ob_type->tp_as_buffer )
 	{
 		if( !PyObject_CheckBuffer( object.o ) )

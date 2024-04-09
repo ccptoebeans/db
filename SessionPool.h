@@ -151,7 +151,7 @@ private:
 	const ATL::CDataSource mDataSource;
 	LONG mSessionCount; //total number of sessions
 	int mSessionsInUse;	//number of sessions in use (tasklets between StartSession and EndSession)
-	BluePy mChannel; //throttling channel
+	BluePy mChannel; //throttling channel. The PyObject* in mChannel.o is actually a PyChannelObject* and should be cast to/from as needed.
 	ULARGE_INTEGER mNextClean; //When to next perform cleanup
 	volatile bool mAddingIdle;	//used to ensure that only a single "idle" job runs at a time.
 	std::mutex mMutex;
