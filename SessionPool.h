@@ -127,7 +127,7 @@ private:
 	void MarkClean();
 
 	//A IORequest to create and return a new Session
-	struct Request : public TaskletBlockingRequest
+	struct Request : public IOWorker
 	{
 		Request(SessionPoolPtr pool);
 		~Request();

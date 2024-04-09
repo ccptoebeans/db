@@ -461,11 +461,11 @@ HRESULT SessionPool::Request::GetResult(ATL::CSession* &le)
 	mSession = nullptr;
 	switch( mState )
 	{
-	case TaskletBlockingRequest::DONE:
+	case IOWorker::DONE:
 		return S_OK;
-	case TaskletBlockingRequest::FAILED:
+	case IOWorker::FAILED:
 		return E_FAIL;
-	case TaskletBlockingRequest::PENDING:
+	case IOWorker::PENDING:
 		return E_PENDING;
 	default:
 		return E_UNEXPECTED;

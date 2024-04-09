@@ -3,11 +3,11 @@
 
 #include "StdAfx.h"
 
-class TaskletBlockingRequest
+class IOWorker
 {
 public:
-	TaskletBlockingRequest();
-	~TaskletBlockingRequest();
+	IOWorker();
+	~IOWorker();
 	bool ExecuteAndWait();
 
 	enum State
@@ -27,13 +27,13 @@ private:
 	PyChannelObject* mChannel;
 };
 
-class RequestContext : public IBlueEvents
+class IOWorkerContext : public IBlueEvents
 {
 public:
-	RequestContext();
-	~RequestContext();
+	IOWorkerContext();
+	~IOWorkerContext();
 	void Init();
-	void Schedule( TaskletBlockingRequest* request );
+	void Schedule( IOWorker* request );
 
 private:
 	void OnTick( Be::Time realTime, Be::Time simTime, void* cookie ) override; // IBlueEvents::OnTick
@@ -42,6 +42,6 @@ private:
 	bool mRegistered;
 };
 
-static RequestContext g_taskletBlockingRequestContext;
+static IOWorkerContext g_taskletBlockingRequestContext;
 
 #endif //DB_TASKLETBLOCKINGIO_H

@@ -4,14 +4,14 @@
 #include "TaskletBlockingIO.h"
 #include <BluePyCpp.h>
 
-const void* COOKIE = "DB::RequestContext";
+const void* COOKIE = "DB::IOWorkerContext";
 
-RequestContext::RequestContext() :
+IOWorkerContext::IOWorkerContext() :
 	mRegistered( false ), mLoop( nullptr )
 {
 }
 
-RequestContext::~RequestContext()
+IOWorkerContext::~IOWorkerContext()
 {
 	if( mRegistered )
 	{
@@ -25,7 +25,7 @@ RequestContext::~RequestContext()
 	}
 }
 
-void RequestContext::Init()
+void IOWorkerContext::Init()
 {
 	if( !mLoop )
 	{
@@ -41,7 +41,7 @@ void RequestContext::Init()
 
 void AfterWorkCB( uv_work_t* work, int status )
 {
-	auto* request = static_cast<TaskletBlockingRequest*>( work->data );
+	auto* request = static_cast<IOWorker*>( work->data );
 	if( status == UV_ECANCELED )
 	{
 		request->MarkCancelled();
@@ -51,11 +51,11 @@ void AfterWorkCB( uv_work_t* work, int status )
 
 void WorkCB( uv_work_t* work )
 {
-	auto* request = static_cast<TaskletBlockingRequest*>( work->data );
+	auto* request = static_cast<IOWorker*>( work->data );
 	request->ThreadFunc();
 }
 
-void RequestContext::Schedule( TaskletBlockingRequest* request )
+void IOWorkerContext::Schedule( IOWorker* request )
 {
 	if( !mLoop )
 	{
@@ -66,35 +66,35 @@ void RequestContext::Schedule( TaskletBlockingRequest* request )
 	uv_queue_work( mLoop, work, WorkCB, AfterWorkCB );
 }
 
-void RequestContext::OnTick( Be::Time realTime, Be::Time simTime, void* cookie )
+void IOWorkerContext::OnTick( Be::Time realTime, Be::Time simTime, void* cookie )
 {
 	int result = uv_run( mLoop, UV_RUN_NOWAIT );
 	if( result < 0 )
 	{
-		CCP_LOGERR( "TaskletBlockingRequest::OnTick Error ticking UV loop %d", result );
+		CCP_LOGERR( "IOWorker::OnTick Error ticking UV loop %d", result );
 	}
 }
 
-TaskletBlockingRequest::TaskletBlockingRequest() :
-	mState( TaskletBlockingRequest::PENDING )
+IOWorker::IOWorker() :
+	mState( IOWorker::PENDING )
 {
 	mChannel = PyChannel_New( nullptr );
 	if( !mChannel )
 	{
-		PyErr_WriteUnraisable( PyUnicode_FromString( "TaskletBlockingRequest::Request Failed to create channel" ) );
-		mState = TaskletBlockingRequest::FAILED;
+		PyErr_WriteUnraisable( PyUnicode_FromString( "IOWorker::Request Failed to create channel" ) );
+		mState = IOWorker::FAILED;
 	}
 	PyChannel_SetPreference( mChannel, 1 );
 }
 
 
-TaskletBlockingRequest::~TaskletBlockingRequest()
+IOWorker::~IOWorker()
 {
 	Py_XDECREF( mChannel );
 	mChannel = nullptr;
 }
 
-bool TaskletBlockingRequest::ExecuteAndWait()
+bool IOWorker::ExecuteAndWait()
 {
 	g_taskletBlockingRequestContext.Schedule( this );
 	auto sentinel = PyChannel_Receive( mChannel );
@@ -109,22 +109,22 @@ bool TaskletBlockingRequest::ExecuteAndWait()
 	return true;
 }
 
-void TaskletBlockingRequest::MarkCancelled()
+void IOWorker::MarkCancelled()
 {
-	mState = TaskletBlockingRequest::CANCELED;
+	mState = IOWorker::CANCELED;
 	Ccp::PyGilEnsure gil;
 	if( PyChannel_Send( mChannel, Py_None ) == -1 )
 	{
-		CCP_LOGWARN( "TaskletBlockingRequest::MarkCancelled Failed to send sentinel" );
+		CCP_LOGWARN( "IOWorker::MarkCancelled Failed to send sentinel" );
 	}
 }
 
-void TaskletBlockingRequest::Complete()
+void IOWorker::Complete()
 {
-	mState = TaskletBlockingRequest::DONE;
+	mState = IOWorker::DONE;
 	Ccp::PyGilEnsure gil;
 	if( PyChannel_Send( mChannel, Py_None ) == -1 )
 	{
-		CCP_LOGWARN( "TaskletBlockingRequest::Complete Failed to send sentinel" );
+		CCP_LOGWARN( "IOWorker::Complete Failed to send sentinel" );
 	}
 }

@@ -113,7 +113,7 @@ private:
 	
 	PyObject *GetSchemaB(bool refresh); //returns our cached schema.
 	
-	struct Request : public TaskletBlockingRequest
+	struct Request : public IOWorker
 	{
 		Request(NSession *ns) : mNSession(ns), mCommand(ns), mSessionKeeper(ns->mSessionPool) {
 			mSession = 0;
