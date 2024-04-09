@@ -99,7 +99,7 @@ if(WIN32)
         configure_ccp_vendor_config_file(
             TARGET db
             DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/dbConfig.cmake"
-            DEPENDENCIES "libuv"
+            DEPENDENCIES ""
         )
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dbConfig.cmake DESTINATION .)
 
