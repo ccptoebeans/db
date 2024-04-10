@@ -2,7 +2,6 @@ import unittest
 import collections
 import db
 import os
-from test import support
 
 import blue
 import stackless
@@ -90,14 +89,14 @@ class DbUnitTests(unittest.TestCase):
 def main():
     exc = None
 
-    def wrap_run(testcase):
+    def wrap_run():
         nonlocal exc
         try:
-            support.run_unittest(testcase)
+            unittest.main()
         except Exception as e:
             exc = e
 
-    t = stackless.tasklet(wrap_run)(DbUnitTests)
+    t = stackless.tasklet(wrap_run)()
     while t.alive:
         blue.os.Pump()
     if exc:
