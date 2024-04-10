@@ -1,8 +1,10 @@
 import unittest
 import collections
-import sys
 import db
 import os
+
+import blue
+import stackless
 
 
 CONNECTION_STRING = os.environ.get('CCP_LOCALDB_CONNECTION_STRING', None)
@@ -52,10 +54,12 @@ class DbUnitTests(unittest.TestCase):
 
     @unittest.skipIf(not CONNECTION_STRING, "Skipping because it requires a local db") 
     def testGetSessionStatus(self):
+        sessionsettings = self.session.GetSessionSettings()
+        minFreeSessions = sessionsettings['minFreeSessions']
         sessionStatus = self.session.GetSessionStatus()
-        self.assertEqual(sessionStatus['sessionCount'], 1)
+        self.assertEqual(sessionStatus['sessionCount'], minFreeSessions)
         self.assertEqual(sessionStatus['sessionsInUse'], 0)
-        self.assertEqual(sessionStatus['freeSessions'], 1)
+        self.assertEqual(sessionStatus['freeSessions'], minFreeSessions)
 
     @unittest.skipIf(not CONNECTION_STRING, "Skipping because it requires a local db") 
     def testGetSessionSettings(self):
@@ -81,5 +85,23 @@ class DbUnitTests(unittest.TestCase):
         self.assertEqual(sessionsettings['maxFreeSessions'], targetMaxFreeSessions)
         self.assertEqual(sessionsettings['minFreeSessions'], targetMinFreeSessions)
 
-if __name__ == '__main__':
-    unittest.main()
+
+def main():
+    exc = None
+
+    def wrap_run():
+        nonlocal exc
+        try:
+            unittest.main()
+        except Exception as e:
+            exc = e
+
+    t = stackless.tasklet(wrap_run)()
+    while t.alive:
+        blue.os.Pump()
+    if exc:
+        raise exc
+
+
+if __name__ == "__main__":
+    main()

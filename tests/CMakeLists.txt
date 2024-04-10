@@ -43,6 +43,8 @@ set(db_sources
     ../StringStore.h
     ../SqlCommand.cpp
     ../SqlCommand.h
+    ../TaskletBlockingIO.cpp
+    ../TaskletBlockingIO.h
     ../TmpRowset.cpp
     ../TmpRowset.h
     ../Utils.cpp
@@ -65,7 +67,7 @@ add_compile_definitions(TEST)
 
 target_include_directories(dbTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-target_link_libraries(dbTest PRIVATE Blue msoledbsql version)
+target_link_libraries(dbTest PRIVATE Blue libuv::uv_a msoledbsql version)
 
 target_compile_definitions(dbTest PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
 
@@ -74,12 +76,14 @@ if(WIN32)
 
     # Discover and run Python tests as a single CTest test.
     set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.bat")
-    set(PYTHON_TEST PythonTests)
-    add_test(NAME ${PYTHON_TEST}
-        COMMAND ${PYTHON_INTERPRETER_PATH} -m unittest discover -v
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python
-        COMMAND_EXPAND_LISTS
-    )
-    set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:dbTest>\;$<TARGET_FILE_DIR:db>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+    list(APPEND PYTHON_TESTS test_db.py)
+    list(APPEND PYTHON_TESTS test_parameters.py)
+    foreach(PYTHON_TEST ${PYTHON_TESTS})
+        add_test(NAME ${PYTHON_TEST}
+                COMMAND ${PYTHON_INTERPRETER_PATH} ${PYTHON_TEST}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/dbTest
+        )
+        set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:dbTest>\;$<TARGET_FILE_DIR:db>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+    endforeach()
 
 endif()
