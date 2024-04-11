@@ -29,7 +29,7 @@
 #ifndef _SQLCOMMAND_H_
 #define _SQLCOMMAND_H_
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "tmprowset.h"
 #include "Accessor.h"
 

@@ -29,6 +29,7 @@
 
 #include "stdafx.h"
 #include "SessionPool.h"
+#include <Scheduler.h>
 
 #include "Utils.h"
 

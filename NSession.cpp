@@ -1,5 +1,6 @@
-#include "stdafx.h"
-#include "nsession.h"
+#include "StdAfx.h"
+#include "NSession.h"
+#include <Scheduler.h>
 
 #include "utils.h"
 using Utilities::DbExc_RuntimeError;

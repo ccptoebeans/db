@@ -27,7 +27,6 @@
 
 #include "Connection.h"
 #include "PyTemplates.h"
-//#include <stackless_api.h>
 
 #include "SessionPool.h"
 #include "tmprowset.h"
