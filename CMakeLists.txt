@@ -34,6 +34,7 @@ if(WIN32)
             StdAfx.cpp
             StringStore.cpp
             SqlCommand.cpp
+            TaskletBlockingIO.cpp
             TmpRowset.cpp
             Utils.cpp
     )
@@ -53,6 +54,7 @@ if(WIN32)
             StdAfx.h
             StringStore.h
             SqlCommand.h
+            TaskletBlockingIO.h
             TmpRowset.h
             Utils.h
             version.h
@@ -62,10 +64,11 @@ if(WIN32)
     target_precompile_headers(db PRIVATE StdAfx.h)
 
     find_package(Blue REQUIRED NO_CMAKE_PATH)
+    find_package(libuv CONFIG REQUIRED)
     find_package(msoledbsql REQUIRED NO_CMAKE_PATH)
     find_package(Scheduler REQUIRED NO_CMAKE_PATH)
 
-    target_link_libraries(db PRIVATE Scheduler Blue msoledbsql version)
+    target_link_libraries(db PRIVATE Scheduler Blue libuv::uv_a msoledbsql version)
 
     target_compile_definitions(db PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
     set_target_properties(db PROPERTIES OUTPUT_NAME "_db")

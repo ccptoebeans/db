@@ -34,8 +34,6 @@
 #include <atlstr.h>
 #include <msdadc.h>	// for IDataConvert
 
-#include <stacklessio.h>
-
 #include "SqlCommand.h"
 
 
@@ -136,7 +134,7 @@ private:
 			mCommand.ReleaseCommand();
 		}
 
-		void ThreadFunc(); //the worker function
+		void ThreadFunc() override; //the worker function
 		void Execute(); //when we do a direct execute
 
 		PyObject *Raise();
