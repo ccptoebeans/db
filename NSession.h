@@ -118,20 +118,13 @@ private:
 			mSession = 0;
 		}
 		~Request() {
+			mCommand.Close();
+			mCommand.ReleaseCommand();
+
 			if (mException.get()) {
 				DiscardSession();
 			} else
 				ReleaseSession();
-		}
-
-		// override virtual from IOEvent.
-		// Release the command, which can happen without the GIL held.
-		// The session can only be released with the GIL since it may
-		// involve stackless pumping.
-		void PreDelete() 
-		{
-			mCommand.Close();
-			mCommand.ReleaseCommand();
 		}
 
 		void ThreadFunc() override; //the worker function
