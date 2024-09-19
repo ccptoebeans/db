@@ -3,7 +3,7 @@
 
 #include "StdAfx.h"
 
-class PyChannelObject; // Forward declare the PyChannleObject from <Scheduler.h>
+struct PyChannelObject; // Forward declare the PyChannleObject from <Scheduler.h>
 
 class IOWorker
 {

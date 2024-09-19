@@ -40,20 +40,11 @@ void IOWorkerContext::Init()
 	}
 }
 
-void AfterWorkCB( uv_work_t* work, int status )
-{
-	auto* request = static_cast<IOWorker*>( work->data );
-	if( status == UV_ECANCELED )
-	{
-		request->MarkCancelled();
-	}
-	request->Complete();
-}
-
 void WorkCB( uv_work_t* work )
 {
 	auto* request = static_cast<IOWorker*>( work->data );
 	request->ThreadFunc();
+	request->Complete();
 }
 
 void IOWorkerContext::Schedule( IOWorker* request )
@@ -64,7 +55,7 @@ void IOWorkerContext::Schedule( IOWorker* request )
 	}
 	auto* work = new uv_work_t;
 	work->data = request;
-	uv_queue_work( mLoop, work, WorkCB, AfterWorkCB );
+	uv_queue_work( mLoop, work, WorkCB, nullptr );
 }
 
 void IOWorkerContext::OnTick( Be::Time realTime, Be::Time simTime, void* cookie )
