@@ -60,6 +60,7 @@ source_group(db FILES ${db_sources})
         
 
 target_include_directories(dbTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(dbTest PRIVATE ${CARBONIO_INCLUDE_DIR})
 
 target_precompile_headers(dbTest PRIVATE ../StdAfx.h)
 

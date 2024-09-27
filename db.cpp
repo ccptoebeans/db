@@ -76,6 +76,11 @@ BOOL APIENTRY DllMain(HINSTANCE instance, DWORD  reason, LPVOID)
 extern "C" __declspec( dllexport ) PyObject* 
 CCP_CONCATENATE( PyInit__db, CCP_BUILD_FLAVOR )()
 {
+	auto* context = GetTaskletBlockingRequestContext();
+	if( !context->Init() )
+	{
+		return nullptr;
+	}
 	// Init Blue related
 	PyObject* module = BlueClientStart( gInstance );
 	CoInitialize(0);
