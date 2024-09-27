@@ -69,6 +69,8 @@ if(WIN32)
     find_package(Scheduler REQUIRED NO_CMAKE_PATH)
     find_package(CarbonIO REQUIRED NO_CMAKE_PATH)
 
+    # We don't link against carbonio. We just need "socketmodule.h"
+    # to import the _socket module C API.
     get_target_property(CARBONIO_INCLUDE_DIR carbonio INTERFACE_INCLUDE_DIRECTORIES)
     target_include_directories(db PRIVATE ${CARBONIO_INCLUDE_DIR})
 

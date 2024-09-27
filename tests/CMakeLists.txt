@@ -62,15 +62,6 @@ source_group(db FILES ${db_sources})
 target_include_directories(dbTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(dbTest PRIVATE ${CARBONIO_INCLUDE_DIR})
 
-# Copy _socket.pyd over so that we can access the C API.
-get_target_property(CARBONIO_IMPORTED_LOCATION carbonio IMPORTED_LOCATION_RELEASE)
-add_custom_command(
-        TARGET dbTest POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CARBONIO_IMPORTED_LOCATION} $<TARGET_FILE_DIR:dbTest>
-        COMMAND_EXPAND_LISTS
-)
-
 target_precompile_headers(dbTest PRIVATE ../StdAfx.h)
 
 add_compile_definitions(TEST)
