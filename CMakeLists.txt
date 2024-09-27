@@ -67,8 +67,12 @@ if(WIN32)
     find_package(libuv CONFIG REQUIRED)
     find_package(msoledbsql REQUIRED NO_CMAKE_PATH)
     find_package(Scheduler REQUIRED NO_CMAKE_PATH)
+    find_package(CarbonIO REQUIRED NO_CMAKE_PATH)
 
-    target_link_libraries(db PRIVATE Scheduler Blue libuv::uv_a msoledbsql version)
+    get_target_property(CARBONIO_INCLUDE_DIR carbonio INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(db PRIVATE ${CARBONIO_INCLUDE_DIR})
+
+    target_link_libraries(db PRIVATE Scheduler Blue libuv::uv msoledbsql version)
 
     target_compile_definitions(db PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
     set_target_properties(db PROPERTIES OUTPUT_NAME "_db")

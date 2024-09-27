@@ -34,7 +34,7 @@ class IOWorkerContext : public IBlueEvents
 public:
 	IOWorkerContext();
 	~IOWorkerContext();
-	void Init();
+	bool Init();
 	void Schedule( IOWorker* request );
 
 private:
@@ -44,6 +44,6 @@ private:
 	bool mRegistered;
 };
 
-static IOWorkerContext g_taskletBlockingRequestContext;
+IOWorkerContext* GetTaskletBlockingRequestContext();
 
 #endif //DB_TASKLETBLOCKINGIO_H

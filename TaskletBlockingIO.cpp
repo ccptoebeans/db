@@ -4,8 +4,16 @@
 #include "TaskletBlockingIO.h"
 #include <BluePyCpp.h>
 #include <Scheduler.h>
+#include <socketmodule.h>
 
 const void* COOKIE = "DB::IOWorkerContext";
+
+static IOWorkerContext g_taskletBlockingRequestContext;
+
+IOWorkerContext* GetTaskletBlockingRequestContext()
+{
+	return &g_taskletBlockingRequestContext;
+}
 
 IOWorkerContext::IOWorkerContext() :
 	mRegistered( false ), mLoop( nullptr )
@@ -19,25 +27,28 @@ IOWorkerContext::~IOWorkerContext()
 		BeOS->UnregisterForTicks( this, const_cast<void*>( COOKIE ) );
 		mRegistered = false;
 	}
-	if( mLoop )
-	{
-		uv_loop_close( mLoop );
-		mLoop = nullptr;
-	}
 }
 
-void IOWorkerContext::Init()
+bool IOWorkerContext::Init()
 {
+	auto* socketAPI = reinterpret_cast<PySocketModule_APIObject*>( PySocketModule_ImportModuleAndAPI() );
+	if ( !socketAPI )
+	{
+		CCP_LOGERR( "Failed acquiring carbon-io socket module" );
+		return false;
+	}
+	mLoop = socketAPI->get_uv_loop();
 	if( !mLoop )
 	{
-		mLoop = new uv_loop_t;
-		uv_loop_init( mLoop );
+		CCP_LOGERR( "Failed to get uv_loop from carbon-io socket module" );
+		return false;
 	}
 	if( !mRegistered )
 	{
 		BeOS->RegisterForTicks( this, const_cast<void*>( COOKIE ) );
 		mRegistered = true;
 	}
+	return true;
 }
 
 void AfterWorkCB( uv_work_t* work, int status )
@@ -61,10 +72,6 @@ void WorkCB( uv_work_t* work )
 
 void IOWorkerContext::Schedule( IOWorker* request )
 {
-	if( !mLoop )
-	{
-		Init();
-	}
 	auto* work = new uv_work_t;
 	work->data = request;
 	uv_queue_work( mLoop, work, WorkCB, AfterWorkCB );
