@@ -52,6 +52,29 @@ class DbUnitTests(unittest.TestCase):
         ret = self.session.Execute(zsystemSQLProcName, ["SELECT a = NULL"])
         self.assertTrue(ret != None)    
 
+    @unittest.skipIf(not CONNECTION_STRING, "Skipping because it requires a local db")
+    def testExectutingTaskletCanBeSafelyKilled(self):
+        """
+        This checks that we don't run into crashes
+        due to lifetime issues when a tasklet gets killed.
+        """ 
+        self.session.allowSync = 1
+        procs, tables = self.session.GetSchema(False)
+        schemas = collections.defaultdict(Schema)
+        for schemaProcName, proc in procs.items():
+            if "." in schemaProcName:
+                schemaName, procName = schemaProcName.split(".")
+                schemas[schemaName].procedures[procName] = schemaProcName
+
+        # Execute SQL proc
+        zsystemSchema = schemas['zsystem']
+        zsystemSQLProcName = zsystemSchema.procedures['SQL']
+        t = scheduler.tasklet(self.session.Execute)
+        t(zsystemSQLProcName, ["SELECT a = NULL"])
+        t.run()
+        t.kill()
+        self.assertFalse(t.alive)
+
     @unittest.skipIf(not CONNECTION_STRING, "Skipping because it requires a local db") 
     def testGetSessionStatus(self):
         sessionsettings = self.session.GetSessionSettings()

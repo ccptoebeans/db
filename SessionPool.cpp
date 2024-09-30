@@ -241,7 +241,7 @@ HRESULT SessionPool::TaskletBlockingNewSession(ATL::CSession* &s)
 	//but lets not worry.
 	InterlockedIncrement(&mSessionCount);
 	try {
-		auto req = std::make_unique<Request>( this->shared_from_this() );
+		auto req = std::make_shared<Request>( this->shared_from_this() );
 		req->ExecuteAndWait();
 		return req->GetResult(s);
 	} catch(std::exception) {

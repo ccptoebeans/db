@@ -51,9 +51,15 @@ bool IOWorkerContext::Init()
 	return true;
 }
 
+typedef struct {
+	uv_work_t work;
+	std::shared_ptr<IOWorker> request;
+} uv_work_req_t;
+
 void AfterWorkCB( uv_work_t* work, int status )
 {
-	auto* request = static_cast<IOWorker*>( work->data );
+	auto workRequest = reinterpret_cast<uv_work_req_t*>(work);
+	auto request = workRequest->request;
 	if( status == UV_ECANCELED )
 	{
 		request->MarkCancelled();
@@ -62,19 +68,21 @@ void AfterWorkCB( uv_work_t* work, int status )
 	{
 		request->Complete();
 	}
+	request.reset();
+	delete workRequest;
 }
 
 void WorkCB( uv_work_t* work )
 {
-	auto* request = static_cast<IOWorker*>( work->data );
+	auto request = reinterpret_cast<uv_work_req_t*>(work)->request;
 	request->ThreadFunc();
 }
 
-void IOWorkerContext::Schedule( IOWorker* request )
+void IOWorkerContext::Schedule( std::shared_ptr<IOWorker> request )
 {
-	auto* work = new uv_work_t;
-	work->data = request;
-	uv_queue_work( mLoop, work, WorkCB, AfterWorkCB );
+	auto* work = new uv_work_req_t;
+	work->request = request;
+	uv_queue_work( mLoop, reinterpret_cast<uv_work_t*>(work), WorkCB, AfterWorkCB );
 }
 
 void IOWorkerContext::OnTick( Be::Time realTime, Be::Time simTime, void* cookie )
@@ -107,7 +115,7 @@ IOWorker::~IOWorker()
 
 bool IOWorker::ExecuteAndWait()
 {
-	g_taskletBlockingRequestContext.Schedule( this );
+	g_taskletBlockingRequestContext.Schedule( shared_from_this() );
 	auto sentinel = SchedulerAPI()->PyChannel_Receive( mChannel );
 	if( !sentinel )
 	{
@@ -124,6 +132,10 @@ void IOWorker::MarkCancelled()
 {
 	mState = IOWorker::CANCELED;
 	Ccp::PyGilEnsure gil;
+	if( SchedulerAPI()->PyChannel_GetBalance( mChannel ) >= 0 )
+	{
+		return;
+	}
 	if( SchedulerAPI()->PyChannel_Send( mChannel, Py_None ) == -1 )
 	{
 		CCP_LOGWARN( "IOWorker::MarkCancelled Failed to send sentinel" );
@@ -134,6 +146,10 @@ void IOWorker::Complete()
 {
 	mState = IOWorker::DONE;
 	Ccp::PyGilEnsure gil;
+	if( SchedulerAPI()->PyChannel_GetBalance( mChannel ) >= 0 )
+	{
+		return;
+	}
 	if( SchedulerAPI()->PyChannel_Send( mChannel, Py_None ) == -1 )
 	{
 		CCP_LOGWARN( "IOWorker::Complete Failed to send sentinel" );

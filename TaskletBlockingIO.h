@@ -5,7 +5,7 @@
 
 struct PyChannelObject; // Forward declare the PyChannleObject from <Scheduler.h>
 
-class IOWorker
+class IOWorker : public std::enable_shared_from_this<IOWorker>
 {
 public:
 	IOWorker();
@@ -35,7 +35,7 @@ public:
 	IOWorkerContext();
 	~IOWorkerContext();
 	bool Init();
-	void Schedule( IOWorker* request );
+	void Schedule( std::shared_ptr<IOWorker> request );
 
 private:
 	void OnTick( Be::Time realTime, Be::Time simTime, void* cookie ) override; // IBlueEvents::OnTick
