@@ -295,6 +295,9 @@ PyObject *NSession::ExecuteBlock(Request &req)
 		}
 	}
 
+	if (PyErr_Occurred())
+		return nullptr;
+
 	if (req.mException.get())
 		return req.Raise();
 	
