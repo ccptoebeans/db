@@ -29,19 +29,15 @@ private:
 	PyChannelObject* mChannel;
 };
 
-class IOWorkerContext : public IBlueEvents
+class IOWorkerContext
 {
 public:
 	IOWorkerContext();
-	~IOWorkerContext();
 	bool Init();
 	void Schedule( std::shared_ptr<IOWorker> request );
 
 private:
-	void OnTick( Be::Time realTime, Be::Time simTime, void* cookie ) override; // IBlueEvents::OnTick
-
 	uv_loop_t* mLoop;
-	bool mRegistered;
 };
 
 IOWorkerContext* GetTaskletBlockingRequestContext();

@@ -16,17 +16,8 @@ IOWorkerContext* GetTaskletBlockingRequestContext()
 }
 
 IOWorkerContext::IOWorkerContext() :
-	mRegistered( false ), mLoop( nullptr )
+	mLoop( nullptr )
 {
-}
-
-IOWorkerContext::~IOWorkerContext()
-{
-	if( mRegistered )
-	{
-		BeOS->UnregisterForTicks( this, const_cast<void*>( COOKIE ) );
-		mRegistered = false;
-	}
 }
 
 bool IOWorkerContext::Init()
@@ -42,11 +33,6 @@ bool IOWorkerContext::Init()
 	{
 		CCP_LOGERR( "Failed to get uv_loop from carbon-io socket module" );
 		return false;
-	}
-	if( !mRegistered )
-	{
-		BeOS->RegisterForTicks( this, const_cast<void*>( COOKIE ) );
-		mRegistered = true;
 	}
 	return true;
 }
@@ -83,15 +69,6 @@ void IOWorkerContext::Schedule( std::shared_ptr<IOWorker> request )
 	auto* work = new uv_work_req_t;
 	work->request = request;
 	uv_queue_work( mLoop, reinterpret_cast<uv_work_t*>(work), WorkCB, AfterWorkCB );
-}
-
-void IOWorkerContext::OnTick( Be::Time realTime, Be::Time simTime, void* cookie )
-{
-	int result = uv_run( mLoop, UV_RUN_NOWAIT );
-	if( result < 0 )
-	{
-		CCP_LOGERR( "IOWorker::OnTick Error ticking UV loop %d", result );
-	}
 }
 
 IOWorker::IOWorker() :
