@@ -289,14 +289,14 @@ PyObject *NSession::ExecuteBlock(Request &req)
 	{
 		AUTOTASKLET1("DB::NSession::WaitForData");
 		try {
-			req.ExecuteAndWait();
+			if(!req.ExecuteAndWait())
+			{
+				return nullptr;
+			}
 		} catch(std::exception &e) {
 			return Ccp::PyErrFromException(e);
 		}
 	}
-
-	if (PyErr_Occurred())
-		return nullptr;
 
 	if (req.mException.get())
 		return req.Raise();
