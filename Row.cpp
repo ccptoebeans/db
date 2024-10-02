@@ -122,34 +122,18 @@ DelayedException* Row::Init( DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR
 			char* s = byref ? *(char**)a.GetValue( i + 1 ) : (char*)a.GetValue( i + 1 );
 
 			//Convert string to wide string so when retrieved the data comes through to Python3 as string, not bytes.
-			PyObject* sAsUnicode = PyUnicode_DecodeASCII( s, strlen( s ), nullptr );
-			if( !sAsUnicode )
-			{
-				CString msg;
-				msg.Format( "Conversion to unicode failed on column %d(%s)", i, (const char*)CW2A( a.GetColumnName( i + 1 ) ) );
-				return DelayedException::New( msg );
-			}
-			wchar_t* sAsWide = PyUnicode_AsWideCharString( sAsUnicode, nullptr );
-			Py_DecRef( sAsUnicode );
-			if( !sAsWide )
-			{
-				CString msg;
-				msg.Format( "Failed to retrieve wide string from unicode object on column %d(%s)", i, (const char*)CW2A( a.GetColumnName( i + 1 ) ) );
-				return DelayedException::New( msg );
-			}
 			StringStoreElem* elem;
-			DelayedException* e = stringStore.Insert( elem, sAsWide, wcslen( sAsWide ) );
-			PyMem_Free( sAsWide );
+			DelayedException* e = stringStore.Insert( elem, s, strlen( s ), false );
 			if( e )
 				return e;
 			SetData( d, elem, i );
 			break;
 		}
 		case DBTYPE_WSTR:
-		case DBTYPE_BSTR: {			
+		case DBTYPE_BSTR: {
 			wchar_t* s = byref ? *(wchar_t**)a.GetValue( i + 1 ) : (wchar_t*)a.GetValue( i + 1 );
 			StringStoreElem* elem;
-			DelayedException* e = stringStore.Insert( elem, s, wcslen( s ) );
+			DelayedException* e = stringStore.Insert( elem, s, wcslen( s ));
 			if( e )
 				return e;
 			SetData( d, elem, i );
@@ -165,7 +149,7 @@ DelayedException* Row::Init( DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR
 			if( !src )
 				len = 0;
 			StringStoreElem* elem;
-			DelayedException* e = stringStore.Insert( elem, src, len );
+			DelayedException* e = stringStore.Insert( elem, src, len, true );
 			if( e )
 				return e;
 			SetData( d, elem, i );

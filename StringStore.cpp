@@ -3,12 +3,12 @@
 
 
 
-StringStoreElem::StringStoreElem(char *data, size_t elems)
+StringStoreElem::StringStoreElem(char *data, size_t elems, bool isBytes)
 {
 	mPython = false;
 	mCData = data;
 	mElements = elems;
-	mUnicode = false;
+	mElementType = isBytes ? BYTESTRING : STRING;
 	Hash();
 }
 
@@ -18,7 +18,7 @@ StringStoreElem::StringStoreElem(wchar_t *data, size_t elems)
 	mPython = false;
 	mWData = data;
 	mElements = elems;
-	mUnicode = true;
+	mElementType = UNICODE;
 	Hash();
 }
 
@@ -33,7 +33,7 @@ StringStoreElem::StringStoreElem(const StringStoreElem &o)
 		mCData = o.mCData;
 		mElements = o.mElements;
 		mHash = o.mHash;
-		mUnicode = o.mUnicode;
+		mElementType = o.mElementType;
 	}
 }
 
@@ -58,7 +58,7 @@ StringStoreElem &StringStoreElem::operator =(const StringStoreElem &o)
 		mCData = o.mCData;
 		mElements = o.mElements;
 		mHash = o.mHash;
-		mUnicode = o.mUnicode;
+		mElementType = o.mElementType;
 	}
 	return *this;
 }
@@ -67,7 +67,7 @@ StringStoreElem &StringStoreElem::operator =(const StringStoreElem &o)
 DelayedException *StringStoreElem::Claim(SimplePoolAllocator &allocator)
 {
 	_ASSERT(!mPython);
-	size_t elen = mUnicode?sizeof(wchar_t):sizeof(char);
+	size_t elen = mElementType == UNICODE ? sizeof( wchar_t ) : sizeof( char );
 	char * tmp = (char*)allocator.align(mElements*elen, (int)elen);
 	if (!tmp)
 		return DelayedException::NoMem();
@@ -79,17 +79,20 @@ DelayedException *StringStoreElem::Claim(SimplePoolAllocator &allocator)
 
 bool StringStoreElem::operator < (const StringStoreElem &rhs) const
 {
-	if (mPython)
+	if(mPython)
 		return false; //converted to python.  This happens at the end, so we just stop
 	int cmp;
-	if (!mUnicode) {
-		if (rhs.mUnicode) //define str is always less than unicode
-			return true;
-		cmp = memcmp(mCData, rhs.mCData, min(mElements, rhs.mElements));
-	} else {
-		if (!rhs.mUnicode)
-			return false;
-		cmp = wmemcmp(mWData, rhs.mWData, min(mElements, rhs.mElements));
+	if(mElementType < rhs.mElementType)
+	{
+		return true;
+	}
+	if(mElementType == UNICODE)
+	{
+		cmp = wmemcmp( mWData, rhs.mWData, min( mElements, rhs.mElements ) );
+	}
+	else
+	{
+		cmp = memcmp( mCData, rhs.mCData, min( mElements, rhs.mElements ) );
 	}
 	if (cmp != 0)
 		return cmp<0;
@@ -118,26 +121,41 @@ void StringStoreElem::Hash()
 	if (mPython)
 		return;
 	const size_t maxHash = 64;
-	if (mUnicode)
+	if (mElementType == UNICODE)
 		mHash = _Hash_value(mWData, mWData+min(mElements,maxHash));
 	else
-		mHash = _Hash_value(mCData, mCData+min(mElements,maxHash));
+	{
+		// XOR with mElementType to ensure unique hashing between string and byte element types
+		mHash = _Hash_value(mCData, mCData+min(mElements,maxHash)) ^ mElementType;
+	}
 }
 
 
 bool StringStoreElem::ToPython()
 {
-	_ASSERT(!mPython);
-	PyObject *p;
-	if (mUnicode) {
+	_ASSERT( !mPython );
+	PyObject* p;
+	switch(mElementType)
+	{
+	case BYTESTRING: {
+		p = PyBytes_FromStringAndSize( mCData, mElements );
+		break;
+	}
+	case STRING:
+		p = PyUnicode_FromStringAndSize( mCData, mElements );
+		break;
+	case UNICODE: {
 		p = PyUnicode_FromWideChar( mWData, mElements );
-		if( p && mElements < 20 )
+		if(p && mElements < 20)
+		{
 			//Intern short python strings from database
 			PyUnicode_InternInPlace( &p );
-	} else {
-		p = PyBytes_FromStringAndSize( mCData, mElements );
+		}
+		break;
 	}
-	if (!p)
+	}
+
+	if(!p)
 		return false;
 	mPython = true;
 	mObject = p;
@@ -163,9 +181,9 @@ StringStore::StringStore(SimplePoolAllocator &allocator) :
 }
 
 
-DelayedException *StringStore::Insert(StringStoreElem* &res, char *data, size_t elems)
+DelayedException *StringStore::Insert(StringStoreElem* &res, char *data, size_t elems, bool isBytes)
 {
-	StringStoreElem tmp(data, elems);
+	StringStoreElem tmp(data, elems, isBytes);
 	std::pair<StringStoreSet_i, bool> r = mSet.insert(tmp);
 	
 	// This is slightly evil. The insert gives us back a const iterator

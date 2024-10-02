@@ -31,12 +31,18 @@
 #include "DelayedException.h"
 #include "BlockAllocator.h"
 
+enum StringStoreElementType
+{
+	BYTESTRING,
+	STRING,
+	UNICODE
+};
 
 class StringStoreElem
 {
 	friend class StringStore;
 public:
-	StringStoreElem(char *data, size_t elems);
+	StringStoreElem(char *data, size_t elems, bool isBytes);
 	StringStoreElem(wchar_t *data, size_t elems);
 	StringStoreElem(const StringStoreElem &o);
 	~StringStoreElem();
@@ -66,7 +72,7 @@ private:
 			};
 			size_t mElements;
 			size_t mHash; //cashed hash
-			bool mUnicode; //points the mData to wchar_t dudes?
+			StringStoreElementType mElementType;
 		};
 		PyObject *mObject;
 	};
@@ -79,7 +85,7 @@ class StringStore
 {
 public:
 	StringStore(SimplePoolAllocator &allocator);
-	DelayedException *Insert(StringStoreElem* &res, char *data, size_t elems);
+	DelayedException *Insert(StringStoreElem* &res, char *data, size_t elems, bool isBytes);
 	DelayedException *Insert(StringStoreElem* &res, wchar_t *data, size_t elems);
 	size_t GetMemSaved() const;
 
