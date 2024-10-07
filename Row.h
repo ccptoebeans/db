@@ -38,12 +38,12 @@
 class Row
 {
 public:
-	static DelayedException* NewRow( Row** res, SimplePoolAllocator& ba, DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR& a, int numCols, StringStore& e );
+	static DelayedException* NewRow( Row** res, SimplePoolAllocator& ba, DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR& a, int numCols, Store& store );
 	static void DeleteRow( Row* r, RowDescriptor const& d );
 	PyObject* ToPython( RowDescriptor const& d, PyObject* pyrd, class ToPythonCtxt& ctxt );
 
 private:
-	DelayedException* Init( DBLENGTH& recvData, RowDescriptor const& d, ACCESSOR& a, int numCols, StringStore& stringStore );
+	DelayedException* Init( DBLENGTH& recvData, RowDescriptor const& d, ACCESSOR& a, int numCols, Store& store );
 
 	void* GetDataPtr( const RowDescriptor& d, DBORDINAL i ) const
 	{

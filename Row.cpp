@@ -9,7 +9,7 @@ void Row::DeleteRow( Row* r, RowDescriptor const& d )
 }
 
 
-DelayedException* Row::NewRow( Row** res, SimplePoolAllocator& ba, DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR& a, int numCols, StringStore& stringStore )
+DelayedException* Row::NewRow( Row** res, SimplePoolAllocator& ba, DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR& a, int numCols, Store& store )
 {
 	int len = offsetof( Row, mData ) + d.mTotalLen;
 	void* data = ba.malloc( len );
@@ -17,7 +17,7 @@ DelayedException* Row::NewRow( Row** res, SimplePoolAllocator& ba, DBLENGTH& rec
 	if( !data )
 		return DelayedException::NoMem( "couldn't allocate %d bytes for Row", len );
 	Row* row = new( data ) Row();
-	DelayedException* exc = row->Init( recvLen, d, a, numCols, stringStore );
+	DelayedException* exc = row->Init( recvLen, d, a, numCols, store);
 	if( exc )
 	{
 		row->~Row();
@@ -27,7 +27,7 @@ DelayedException* Row::NewRow( Row** res, SimplePoolAllocator& ba, DBLENGTH& rec
 	return 0;
 }
 
-DelayedException* Row::Init( DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR& a, int nc, StringStore& stringStore )
+DelayedException* Row::Init( DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR& a, int nc, Store& store )
 {
 	memset( &mData, 0, d.mTotalLen );
 	recvLen = 0;
@@ -121,9 +121,8 @@ DelayedException* Row::Init( DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR
 		case DBTYPE_STR: {
 			char* s = byref ? *(char**)a.GetValue( i + 1 ) : (char*)a.GetValue( i + 1 );
 
-			//Convert string to wide string so when retrieved the data comes through to Python3 as string, not bytes.
-			StringStoreElem* elem;
-			DelayedException* e = stringStore.Insert( elem, s, strlen( s ), false );
+			StringStoreElement* elem;
+			DelayedException* e = store.stringStore.Insert( elem, s, strlen( s ));
 			if( e )
 				return e;
 			SetData( d, elem, i );
@@ -132,8 +131,8 @@ DelayedException* Row::Init( DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR
 		case DBTYPE_WSTR:
 		case DBTYPE_BSTR: {
 			wchar_t* s = byref ? *(wchar_t**)a.GetValue( i + 1 ) : (wchar_t*)a.GetValue( i + 1 );
-			StringStoreElem* elem;
-			DelayedException* e = stringStore.Insert( elem, s, wcslen( s ));
+			WStringStoreElement* elem;
+			DelayedException* e = store.wStringStore.Insert( elem, s, wcslen( s ));
 			if( e )
 				return e;
 			SetData( d, elem, i );
@@ -148,8 +147,8 @@ DelayedException* Row::Init( DBLENGTH& recvLen, RowDescriptor const& d, ACCESSOR
 				src = *(char**)src;
 			if( !src )
 				len = 0;
-			StringStoreElem* elem;
-			DelayedException* e = stringStore.Insert( elem, src, len, true );
+			ByteStoreElement* elem;
+			DelayedException* e = store.byteStore.Insert( elem, src, len);
 			if( e )
 				return e;
 			SetData( d, elem, i );
@@ -233,7 +232,7 @@ PyObject* Row::ToPython( const RowDescriptor& rd, PyObject* pyrd, ToPythonCtxt& 
 	//this is a once only operation, and so the row cannot be converted to Python more than once.
 	for( int i = 0; i < rd.mNObjects; i++ )
 	{
-		StringStoreElem* ptr;
+		StoreElementBase* ptr;
 		GetObject( rd, i, ptr );
 		if( ptr )
 		{

@@ -95,9 +95,8 @@ public:
 class TmpRowset
 {
 public:
-	TmpRowset(NSession *s, SimplePoolAllocator &allocator, StringStore &store) :
-		mRD(s), mRC(DB_COUNTUNAVAILABLE), mAllocator(allocator), mStringStore(store),
-		mRows(rows_a(allocator))
+	TmpRowset(NSession *s, SimplePoolAllocator &allocator, Store& store) :
+		mRD(s), mRC(DB_COUNTUNAVAILABLE), mAllocator(allocator), mStore(store), mRows(rows_a(allocator))
 	{}
 	typedef CAccessorRowset<ACCESSOR, CBulkRowset> rowset_t;
 	DelayedException *Get(DBLENGTH &recvLen, rowset_t &a);
@@ -117,21 +116,21 @@ private:
 	RowDescriptor mRD;
 	rows_t mRows;
 	SimplePoolAllocator &mAllocator;
-	StringStore &mStringStore;
+	Store& mStore;
 };
 
 
 class TmpRowsetList
 {
 public:
-	TmpRowsetList() : mProcResult(0) , mAllocator(8*1024), mStringStore(mAllocator){}
+	TmpRowsetList() : mProcResult(0) , mAllocator(8*1024), mStore(mAllocator){}
 	~TmpRowsetList();
 	typedef CCommand<ACCESSOR, CBulkRowset, CMultipleResults> command_t;
 	DelayedException *Get(DBLENGTH &recvLen, NSession *sess, command_t &cmd, DBROWCOUNT rc);
 
 	//dissolve and change to python.
 	PyObject *ToPython(ToPythonCtxt &ctxt);
-	size_t GetMemSaved() const {return mStringStore.GetMemSaved();}
+	size_t GetMemSaved() const { return mStore.GetMemSaved(); }
 
 private:
 	typedef std::vector<TmpRowset*> rowsets_t;
@@ -140,7 +139,7 @@ private:
 	rowsets_t mRowsets;
 	int mProcResult; //used when list is empty
 	SimplePoolAllocator mAllocator;
-	StringStore mStringStore; //for string reuse in the rowset
+	Store mStore;
 };
 
 

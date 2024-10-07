@@ -27,7 +27,7 @@ PyObject* TestTools::TestParameter( int db_type, PyObject* value )
 	SimplePoolAllocator allocator;
 	Row* r;
 	DBLENGTH receiveLength;
-	StringStore stringStore(allocator);
+	Store store(allocator);
 	int numCols = 1;
 	void* blob;
 	size_t data_length;
@@ -63,7 +63,7 @@ PyObject* TestTools::TestParameter( int db_type, PyObject* value )
 	rd.Init( accessor );
 
 	// Create Row which will retrieve out input data back from MockAccessor set previously
-	Row::NewRow( &r, allocator, receiveLength, rd, accessor, numCols, stringStore );
+	Row::NewRow( &r, allocator, receiveLength, rd, accessor, numCols, store );
 
 	// Convert Row to python, code path ends up in Blue extension ( PyRowSet.cpp )
 	PyObject* retval = r->ToPython( rd, rd.ToPython( ctxt.mBlue ), ctxt );

@@ -32,7 +32,7 @@ DelayedException *TmpRowset::Get(DBLENGTH &recvLen, rowset_t &rs)
 	while(hr != DB_S_ENDOFROWSET) {
 		Row *rp;
 		DBLENGTH len;
-		de = Row::NewRow(&rp, mAllocator, len, mRD, rs, numCols, mStringStore);
+		de = Row::NewRow(&rp, mAllocator, len, mRD, rs, numCols, mStore);
 		if (de)
 			return de;
 		recvLen += len;
@@ -116,7 +116,7 @@ DelayedException *TmpRowsetList::Get(DBLENGTH &recvLen, NSession *sess, command_
 				return DelayedException::New(hr, "GetNextResult() failed (1)");
 		}
 			
-		TmpRowset *trs = new TmpRowset(sess, mAllocator, mStringStore);
+		TmpRowset *trs = new TmpRowset(sess, mAllocator, mStore);
 		if (!trs)
 			return DelayedException::NoMem("Couldn't allocate memory for row");
 		DBLENGTH len;
