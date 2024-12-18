@@ -32,11 +32,12 @@
 #ifndef _SESSIONPOOL_H_
 #define _SESSIONPOOL_H_
 
-#include <stacklessio.h>
+#include <BluePyCpp.h>
 #include <atldbcli.h>
 #include <deque>
 #include <mutex>
 
+#include "TaskletBlockingIO.h"
 
 /*
  * We use a session pool to keep sessions alive.  Each session keeps a connection
@@ -85,8 +86,8 @@ private:
 	//incremented prior.
 	HRESULT NewSession(ATL::CSession* &s);
 	
-	//The same, but with tasklet-blocking boilerplate using
-	//StacklessIO.  This function _will_ infrement mSessionCount
+	//The same, but with tasklet-blocking boilerplate.
+	//This function _will_ increment mSessionCount
 	//since it is called on the main thread.
 	HRESULT TaskletBlockingNewSession(ATL::CSession * &s);
 	
@@ -130,15 +131,15 @@ private:
 	{
 		Request(SessionPoolPtr pool);
 		~Request();
-		void ThreadFunc();
 		HRESULT GetResult(ATL::CSession * &s);
 	
 		SessionPoolPtr mPool;
 		HRESULT mHr;
 		ATL::CSession *mSession;
+	protected:
+		void ThreadFunc() override;
 	}; 
 	//A simple worker thread request to create a new idle session.
-	//stacklessIO doesn't have throw-away IOWorker ops.
 	struct IdleRequest
 	{
 		IdleRequest(SessionPoolPtr pool, int n): mPool(pool), mN(n) {}
@@ -151,7 +152,7 @@ private:
 	const ATL::CDataSource mDataSource;
 	LONG mSessionCount; //total number of sessions
 	int mSessionsInUse;	//number of sessions in use (tasklets between StartSession and EndSession)
-	BluePy mChannel; //throttling channel
+	BluePy mChannel; //throttling channel. The PyObject* in mChannel.o is actually a PyChannelObject* and should be cast to/from as needed.
 	ULARGE_INTEGER mNextClean; //When to next perform cleanup
 	volatile bool mAddingIdle;	//used to ensure that only a single "idle" job runs at a time.
 	std::mutex mMutex;

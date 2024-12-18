@@ -23,24 +23,38 @@ if(WIN32)
             BlockAllocator.cpp
             Connection.cpp
             Connection_Blue.cpp
+            ColumnDescriptor.cpp
             db.cpp
             DelayedException.cpp
             NSession.cpp
+            PythonBuff.cpp
+            Row.cpp
+            RowDescriptor.cpp
             SessionPool.cpp
             StdAfx.cpp
             StringStore.cpp
+            SqlCommand.cpp
+            TaskletBlockingIO.cpp
             TmpRowset.cpp
             Utils.cpp
     )
     target_sources(db PRIVATE
+            Accessor.h
             autoversion.h
             Connection.h
+            ColumnDescriptor.h
             DelayedException.h
             NSession.h
+            OurAccessor.h
+            PythonBuff.h
             resource.h
+            Row.h
+            RowDescriptor.h
             SessionPool.h
             StdAfx.h
             StringStore.h
+            SqlCommand.h
+            TaskletBlockingIO.h
             TmpRowset.h
             Utils.h
             version.h
@@ -50,12 +64,28 @@ if(WIN32)
     target_precompile_headers(db PRIVATE StdAfx.h)
 
     find_package(Blue REQUIRED NO_CMAKE_PATH)
+    find_package(libuv CONFIG REQUIRED)
     find_package(msoledbsql REQUIRED NO_CMAKE_PATH)
+    find_package(Scheduler REQUIRED NO_CMAKE_PATH)
+    find_package(CarbonIO REQUIRED NO_CMAKE_PATH)
 
-    target_link_libraries(db PRIVATE Blue msoledbsql version)
+    # We don't link against carbonio. We just need "socketmodule.h"
+    # to import the _socket module C API.
+    get_target_property(CARBONIO_INCLUDE_DIR carbonio INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(db PRIVATE ${CARBONIO_INCLUDE_DIR})
+
+    target_link_libraries(db PRIVATE Scheduler Blue libuv::uv msoledbsql version)
 
     target_compile_definitions(db PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
     set_target_properties(db PROPERTIES OUTPUT_NAME "_db")
+
+    if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+        option(BUILD_TESTING "Build tests. Enabled by default." ON)
+        include(CTest)
+        if(BUILD_TESTING)
+            add_subdirectory(tests)
+        endif()
+    endif()
 
     # Provide an install target iff this is the top level project only
     if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)

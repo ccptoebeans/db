@@ -10,7 +10,7 @@
 
 	Description:   
 
-		Database connection object with stacklessness.
+		Database connection object.
 
 
 	Dependencies:

@@ -27,7 +27,7 @@
 
 #include <windows.h>
 #include <crtdbg.h>
-#include <python.h>
+#include <Python.h>
 #include <structmember.h>
 
 // -------------------------------------------------------------
@@ -37,26 +37,33 @@ namespace PyErr
 	PyObject* SetErr32(int err, const char* format, ...);
 };
 
+/// <summary>
+/// this is a replacement for:
+/// `typedef PyObject* ( *PyNoArgsFunction )( PyObject* )`
+/// which was removed from the CPython API in Python3.9
+/// </summary>
+/// 
+using BlueNoArgsFunction = std::add_pointer<PyObject*(PyObject*)>::type;
 
 // -------------------------------------------------------------
 // Macro which declares METH_NOARGS python method definition
 #define METHOD_NOARGS(_fn, _doc) \
-	{#_fn, (PyCFunction)(PyNoArgsFunction)PyCFuncNoArgs<&_fn>, METH_NOARGS, _doc},
+	{ #_fn, (PyCFunction)(BlueNoArgsFunction)PyCFuncNoArgs<&_ClassType::_fn>, METH_NOARGS, _doc },
 
 // -------------------------------------------------------------
 // Macro which declares METH_O python method definition
 #define METHOD_O(_fn, _doc) \
-	{#_fn, PyCFuncArgs<&_fn>, METH_O, _doc},
+	{#_fn, PyCFuncArgs<&_ClassType::_fn>, METH_O, _doc},
 
 // -------------------------------------------------------------
 // Macro which declares METH_VARARGS python method definition
 #define METHOD_VARARGS(_fn, _doc) \
-	{#_fn, PyCFuncArgs<&_fn>, METH_VARARGS, _doc},
+	{#_fn, PyCFuncArgs<&_ClassType::_fn>, METH_VARARGS, _doc},
 
 // -------------------------------------------------------------
 // Macro which declares METH_KEYWORDS python method definition
 #define METHOD_KEYWORDS(_fn, _doc) \
-	{ #_fn, (PyCFunction)(PyCFunctionWithKeywords)PyCFuncKeywords<&_fn>, \
+	{ #_fn, (PyCFunction)(PyCFunctionWithKeywords)PyCFuncKeywords<&_ClassType::_fn>, \
 		METH_VARARGS | METH_KEYWORDS, _doc},
 
 
@@ -83,10 +90,10 @@ namespace PyErr
 		{
 
 #define PYTHON_GETSET(_propname, _descr) \
-	{#_propname, PyCFuncGetter<&Get_##_propname>, PyCFuncSetter<&Set_##_propname>, _descr},
+	{(char*)#_propname, PyCFuncGetter<&_ClassType::Get_##_propname>, PyCFuncSetter<&_ClassType::Set_##_propname>, (char*)_descr},
 
 #define PYTHON_GET(_propname, _descr) \
-	{#_propname, PyCFuncGetter<&Get_##_propname>, NULL, _descr},
+	{(char*)#_propname, PyCFuncGetter<&_ClassType::Get_##_propname>, NULL, (char*)_descr},
 
 #define PYTHON_GETLIST(_propname, _variable, _descr, _listclass) \
 	{_propname, _listclass::_getList<offsetof(_ClassType, _variable)>, NULL, _descr},
@@ -109,16 +116,16 @@ namespace PyErr
 		{
 
 #define PYTHON_MEMBER(_propname, _type, _variable, _flags) \
-	{_propname, _type, (int)_spesoffs(_ClassType, _variable), _flags},
+	{(char*)_propname, _type, (int)_spesoffs(_ClassType, _variable), _flags},
 
 #define PYTHON_MEMBERS_END() PYTHON_METHODS_END()
 
 // -------------------------------------------------------------
 // Macros to uhm... give the class a name
 #define PYTHON_CLASS(_classname) \
-	static char* _ClassName() { return _classname; }
+	static char* _ClassName() { return (char*)_classname; }
 
-#define _spesoffs(s, m) (offsetof(s, m) - (SIZE_T)static_cast<PyObject*>(reinterpret_cast<s*>(0)))
+#define _spesoffs(s, m) (offsetof(s, m) - (size_t)static_cast<PyObject*>(reinterpret_cast<s*>(0)))
 
 
 
@@ -209,22 +216,22 @@ public:
 	}
 
 	// Help thunk for get/setting int64
-	template <__int64 T::*P>
+	template <int64_t T::*P>
 	static PyObject* PyCFuncGetInt64(PyObject* self, void*)
 	{
 		T* pThis = static_cast<T*>(self);
 		return PyLong_FromLongLong(pThis->*P);
 	}
 
-	template <__int64 T::*P>
+	template <int64_t T::*P>
 	static int PyCFuncSetInt64(PyObject* self, PyObject* v, void*)
 	{
-		__int64 tmp = PyLong_AsLongLong(v);
+		int64_t tmp = PyLong_AsLongLong(v);
 		if (tmp == -1 && PyErr_Occurred())
 			return -1;
 
 		T* pThis = static_cast<T*>(self);
-		pThis->*P = PyLong_AsLongLong(tmp);
+		pThis->*P = tmp;
 		return 0;
 	}
 };
@@ -265,8 +272,7 @@ struct PyXObject : public PyObject, public PyXThunker<T>
 	{
 		static PyTypeObject type =
 		{
-			PyObject_HEAD_INIT(&PyType_Type)
-			0,
+			PyVarObject_HEAD_INIT(&PyType_Type, 0)
 			T::_ClassName(),
 			0,
 			0,
@@ -304,7 +310,7 @@ struct PyXObject : public PyObject, public PyXThunker<T>
 			0,                  /* tp_init */
 			0,                  /* tp_alloc */
 			0,					/* tp_new */
-			_PyObject_Del,                  /* tp_free */
+			nullptr,            /* tp_free        ?? PyObject_Del ?? */
 		};
 
 		static bool postInitialized = false;
@@ -360,7 +366,7 @@ struct PyXObject2 : public PyObject, public PyXThunker<T>
 		void *raw = _Alloc(subtype);
 		if (!raw)
 			return 0;
-		T *obj = new(raw) T();
+		T *obj = new(raw) T;
 		return obj;
 	}
 	static void _Dealloc(PyObject *self)
@@ -382,7 +388,7 @@ struct SequenceObject
 	static PySequenceMethods* GetSequenceMethods()
 	{
 		static PySequenceMethods seqmeth = {
-			T::Seq_Length == Seq_Length ? NULL : Seq_Length_,
+            T::Seq_Length == Seq_Length_ ? NULL : Seq_Length_,
 			T::Seq_Concat_ == Seq_Concat_ ? NULL : Seq_Concat_,
 			T::Seq_Repeat_ == Seq_Repeat_ ? NULL : Seq_Repeat_,
 			Seq_Item_, // mandatory
@@ -396,7 +402,7 @@ struct SequenceObject
 	}
 
 	int Seq_Length(){return 0;}
-	static int Seq_Length_(PyObject* self)
+	static ssize_t Seq_Length_(PyObject* self)
 	{
 		return ((T*)self)->Seq_Length();
 	}
@@ -408,30 +414,30 @@ struct SequenceObject
 	}
 
 	PyObject* Seq_Repeat(int i) { return NULL; }
-	static PyObject* Seq_Repeat_(PyObject* self, int i)
+	static PyObject* Seq_Repeat_(PyObject* self, ssize_t i)
 	{
 		return ((T*)self)->Seq_Repeat(i);
 	}
 
-	static PyObject* Seq_Item_(PyObject* self, int i)
+	static PyObject* Seq_Item_(PyObject* self, ssize_t i)
 	{
 		return 0;//((T*)self)->Seq_Item(i);
 	}
 
 	PyObject* Seq_Slice(int i, int j) { return NULL; }
-	static PyObject* Seq_Slice_(PyObject* self, int i, int j)
+	static PyObject* Seq_Slice_(PyObject* self, ssize_t i, ssize_t j)
 	{
 		return ((T*)self)->Seq_Slice(i, j);
 	}
 
 	int Seq_AssItem(int i, PyObject* o) { return -1; }
-	static int Seq_AssItem_(PyObject* self, int i, PyObject* o)
+	static int Seq_AssItem_(PyObject* self, ssize_t i, PyObject* o)
 	{
 		return ((T*)self)->Seq_AssItem(i, o);
 	}
 
 	int Seq_AssSlice(int i,  int j, PyObject* o) { return -1; }
-	static int Seq_AssSlice_(PyObject* self, int i,  int j, PyObject* o)
+	static int Seq_AssSlice_(PyObject* self, ssize_t i,  ssize_t j, PyObject* o)
 	{
 		return ((T*)self)->Seq_AssSlice(i, j, o);
 	}
@@ -488,7 +494,7 @@ struct DList
 			return NULL;
 
 		int i = 0;
-		for (T* o = mFirst; o != NULL; o = o->LI::mNext)
+		for (typename LI::_TClass* o = mFirst; o != NULL; o = o->LI::mNext)
 		{
 			PyList_SET_ITEM(list, i++, o);
 			Py_INCREF(o);
