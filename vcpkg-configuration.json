@@ -1,0 +1,15 @@
+{
+  "default-registry": {
+    "kind": "git",
+    "baseline": "bea476a80218a581bcb5318595849520217c825e",
+    "repository": "https://github.com/microsoft/vcpkg.git"
+  },
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "git@github.com:ccpgames/carbon-vcpkg-registry.git",
+      "baseline": "b4591850c03cc1f0566bb322e6089de98927b439",
+      "packages": ["carbon-*", "greenlet", "python3-prebuilt", "ccp-debug-info", "tracy", "crashpad", "msoledbsql"]
+    }
+  ]
+}
