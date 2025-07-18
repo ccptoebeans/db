@@ -181,15 +181,6 @@ class Publish(perforce_publish_path: String) : BuildType({
     }
 
     dependencies {
-        dependency(MacOS.Debug) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-            }
-
-            artifacts {
-                artifactRules = "**/*=>%eve_branch_root%/%perforce_path_to_publish_into%/${MacOS.Debug.depParamRefs["env.GIT_TAG_HASH"]}"
-            }
-        }
         dependency(Windows.Debug) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
@@ -197,15 +188,6 @@ class Publish(perforce_publish_path: String) : BuildType({
 
             artifacts {
                 artifactRules = "**/*=>%eve_branch_root%/%perforce_path_to_publish_into%/${Windows.Debug.depParamRefs["env.GIT_TAG_HASH"]}"
-            }
-        }
-        dependency(MacOS.Internal) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-            }
-
-            artifacts {
-                artifactRules = "**/*=>%eve_branch_root%/%perforce_path_to_publish_into%/${MacOS.Internal.depParamRefs["env.GIT_TAG_HASH"]}"
             }
         }
         dependency(Windows.Internal) {
@@ -217,15 +199,6 @@ class Publish(perforce_publish_path: String) : BuildType({
                 artifactRules = "**/*=>%eve_branch_root%/%perforce_path_to_publish_into%/${Windows.Internal.depParamRefs["env.GIT_TAG_HASH"]}"
             }
         }
-        dependency(MacOS.Release) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-            }
-
-            artifacts {
-                artifactRules = "**/*=>%eve_branch_root%/%perforce_path_to_publish_into%/${MacOS.Release.depParamRefs["env.GIT_TAG_HASH"]}"
-            }
-        }
         dependency(Windows.Release) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
@@ -233,15 +206,6 @@ class Publish(perforce_publish_path: String) : BuildType({
 
             artifacts {
                 artifactRules = "**/*=>%eve_branch_root%/%perforce_path_to_publish_into%/${Windows.Release.depParamRefs["env.GIT_TAG_HASH"]}"
-            }
-        }
-        dependency(MacOS.TrinityDev) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-            }
-
-            artifacts {
-                artifactRules = "**/*=>%eve_branch_root%/%perforce_path_to_publish_into%/${MacOS.TrinityDev.depParamRefs["env.GIT_TAG_HASH"]}"
             }
         }
         dependency(Windows.TrinityDev) {
