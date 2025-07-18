@@ -16,7 +16,6 @@ object Project : Project({
     }
     
     subProject(Windows.Project)
-    subProject(MacOS.Project)
 
     buildType(PublishToPerforce)
 })
