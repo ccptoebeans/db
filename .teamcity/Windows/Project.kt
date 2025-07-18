@@ -71,12 +71,6 @@ class CarbonBuildWindows(buildName: String, configType: String, preset: String) 
 
     steps {
         exec {
-            name = "Create VCPKG buildtree location"
-            workingDir = "%teamcity.build.checkoutDir%/%github_checkout_folder%"
-            path = "mkdir"
-            arguments = "buildtrees"
-        }
-        exec {
             name = "Create VCPKG registrycache location"
             workingDir = "%teamcity.build.checkoutDir%/%github_checkout_folder%"
             path = "mkdir"
@@ -104,7 +98,7 @@ class CarbonBuildWindows(buildName: String, configType: String, preset: String) 
         exec {
             name = "Configure"
             path = "cmake"
-            arguments = "--preset %env.CMAKE_PRESET% -S %teamcity.build.checkoutDir%/%github_checkout_folder% -B %env.CMAKE_BUILD_FOLDER% -DCMAKE_INSTALL_PREFIX=%env.CMAKE_INSTALL_PREFIX% -DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=%teamcity.build.checkoutDir%/%github_checkout_folder%/buildtrees"
+            arguments = "--preset %env.CMAKE_PRESET% -S %teamcity.build.checkoutDir%/%github_checkout_folder% -B %env.CMAKE_BUILD_FOLDER% -DCMAKE_INSTALL_PREFIX=%env.CMAKE_INSTALL_PREFIX% -DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=C:/vcpkgbuildtrees"
         }
         exec {
             name = "Build"
