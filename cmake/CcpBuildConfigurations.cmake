@@ -64,7 +64,8 @@ function(create_new_build_config config prototype)
         CMAKE_CXX_FLAGS_${CONFIG}
         CMAKE_C_FLAGS_${CONFIG}
         CMAKE_EXE_LINKER_FLAGS_${CONFIG}
-        CMAKE_SHARED_LINKER_FLAGS_${CONFIG})
+        CMAKE_SHARED_LINKER_FLAGS_${CONFIG}
+        CMAKE_MODULE_LINKER_FLAGS_${CONFIG})
 endfunction()
 
 create_new_build_config(Internal Release)
