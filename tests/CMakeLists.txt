@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(dbTest VERSION 1.0.0)
 
+find_package(carbon-exefile-interpreter REQUIRED CONFIG)
+
 set(dbTest_sources
     dbTest.cpp
     TestTools.cpp
@@ -66,25 +68,40 @@ target_precompile_headers(dbTest PRIVATE ../StdAfx.h)
 
 add_compile_definitions(TEST)
 
-target_include_directories(dbTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
+get_target_property(SCHEDULER_INCLUDE_DIR Scheduler INTERFACE_INCLUDE_DIRECTORIES)
 
-target_link_libraries(dbTest PRIVATE Scheduler Blue libuv::uv_a msoledbsql version)
+target_include_directories(dbTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/.. ${SCHEDULER_INCLUDE_DIR})
+
+target_link_libraries(dbTest PRIVATE Blue $<IF:$<TARGET_EXISTS:libuv::uv_a>,libuv::uv_a,libuv::uv> msoledbsql version)
 
 target_compile_definitions(dbTest PRIVATE _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
 
 set_target_properties(dbTest PROPERTIES OUTPUT_NAME "_dbTest")
-if(WIN32)
 
-    # Discover and run Python tests as a single CTest test.
-    set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.bat")
-    list(APPEND PYTHON_TESTS test_db.py)
-    list(APPEND PYTHON_TESTS test_parameters.py)
-    foreach(PYTHON_TEST ${PYTHON_TESTS})
-        add_test(NAME ${PYTHON_TEST}
-                COMMAND ${PYTHON_INTERPRETER_PATH} ${PYTHON_TEST}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/dbTest
-        )
-        set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:dbTest>\;$<TARGET_FILE_DIR:db>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
-    endforeach()
+ccp_prepare_interpreter(
+        TARGET dbTest
+        BUILD_TYPE ${CMAKE_BUILD_TYPE}
+        COMMAND_OUT PYTHON_INTERPRETER
+        PYTHONPATH_OUT PYTHONPATH
+        RUN_DIR $<TARGET_FILE_DIR:dbTest>
+        BLUE_DIR_OUT BLUE_LOCATION_DIR
+)
 
-endif()
+add_custom_command(
+        TARGET dbTest POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:dbTest> $<TARGET_FILE_DIR:dbTest>
+        COMMAND_EXPAND_LISTS
+)
+
+# Discover and run Python tests as a single CTest test.
+set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.bat")
+list(APPEND PYTHON_TESTS test_db.py)
+list(APPEND PYTHON_TESTS test_parameters.py)
+foreach(PYTHON_TEST ${PYTHON_TESTS})
+    add_test(NAME ${PYTHON_TEST}
+            COMMAND ${PYTHON_INTERPRETER} /inherit /buildflavor=$<LOWER_CASE:$<CONFIG>> /py ${PYTHON_TEST}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/dbTest
+    )
+    set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}\;$<TARGET_FILE_DIR:db>\;${CMAKE_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+endforeach()
+
