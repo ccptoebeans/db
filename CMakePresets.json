@@ -12,12 +12,16 @@
       "binaryDir": "${sourceDir}/.cmake-build-${presetName}",
       "cacheVariables": {
         "VCPKG_USE_HOST_TOOLS": "ON",
-        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/triplets"
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/vendor/github.com/carbonengine/vcpkg-registry/triplets"
+      },
+      "environment": {
+        "VCPKG_ROOT": "${sourceDir}/vendor/github.com/microsoft/vcpkg"
       },
       "hidden": true
     },
     {
       "name": "windows",
+      "inherits": "common",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -26,23 +30,16 @@
       "hidden": true
     },
     {
-      "name": "visual-studio",
-      "generator": "Visual Studio 17 2022",
-      "inherits": ["common", "windows"],
-      "toolset": {
-        "value": "v141"
+      "name": "x64-windows",
+      "inherits": "windows",
+      "cacheVariables": {
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/vendor/github.com/carbonengine/vcpkg-registry/toolchains/x64-windows-carbon.cmake"
       },
       "hidden": true
     },
     {
-      "name": "ninja-multi-config",
-      "generator": "Ninja Multi-Config",
-      "inherits": "common",
-      "hidden": true
-    },
-    {
-      "name": "vs-x64-windows-internal",
-      "inherits": "visual-studio",
+      "name": "x64-windows-internal",
+      "inherits": "x64-windows",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Internal",
         "VCPKG_TARGET_TRIPLET": "x64-windows-internal",
@@ -50,8 +47,8 @@
       }
     },
     {
-      "name": "vs-x64-windows-release",
-      "inherits": "visual-studio",
+      "name": "x64-windows-release",
+      "inherits": "x64-windows",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "VCPKG_TARGET_TRIPLET": "x64-windows-release",
@@ -59,8 +56,8 @@
       }
     },
     {
-      "name": "vs-x64-windows-debug",
-      "inherits": "visual-studio",
+      "name": "x64-windows-debug",
+      "inherits": "x64-windows",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "VCPKG_TARGET_TRIPLET": "x64-windows-debug",
@@ -68,44 +65,8 @@
       }
     },
     {
-      "name": "vs-x64-windows-trinitydev",
-      "inherits": "visual-studio",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "TrinityDev",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-trinitydev",
-        "VCPKG_HOST_TRIPLET": "x64-windows-trinitydev"
-      }
-    },
-    {
-      "name": "nmc-x64-windows-internal",
-      "inherits": ["ninja-multi-config", "windows"],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Internal",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-internal",
-        "VCPKG_HOST_TRIPLET": "x64-windows-internal"
-      }
-    },
-    {
-      "name": "nmc-x64-windows-release",
-      "inherits": ["ninja-multi-config", "windows"],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-release",
-        "VCPKG_HOST_TRIPLET": "x64-windows-release"
-      }
-    },
-    {
-      "name": "nmc-x64-windows-debug",
-      "inherits": ["ninja-multi-config", "windows"],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-debug",
-        "VCPKG_HOST_TRIPLET": "x64-windows-debug"
-      }
-    },
-    {
-      "name": "nmc-x64-windows-trinitydev",
-      "inherits": ["ninja-multi-config", "windows"],
+      "name": "x64-windows-trinitydev",
+      "inherits": "x64-windows",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "TrinityDev",
         "VCPKG_TARGET_TRIPLET": "x64-windows-trinitydev",
