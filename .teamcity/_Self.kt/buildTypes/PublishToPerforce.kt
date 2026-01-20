@@ -58,10 +58,10 @@ class Publish(perforce_publish_path: String) : BuildType({
             command = script {
                 content = """
                     tags = set([
-                        ${Windows.Release.depParamRefs["env.GIT_TAG_HASH"]},
-                        ${Windows.Debug.depParamRefs["env.GIT_TAG_HASH"]},
-                        ${Windows.Internal.depParamRefs["env.GIT_TAG_HASH"]},
-                        ${Windows.TrinityDev.depParamRefs["env.GIT_TAG_HASH"]}
+                        "${Windows.Release.depParamRefs["env.GIT_TAG_HASH"]}",
+                        "${Windows.Debug.depParamRefs["env.GIT_TAG_HASH"]}",
+                        "${Windows.Internal.depParamRefs["env.GIT_TAG_HASH"]}",
+                        "${Windows.TrinityDev.depParamRefs["env.GIT_TAG_HASH"]}"
                     ])
                     if len(tags) == 1:
                         print(f"all tags are the same: {tags[0]}")
