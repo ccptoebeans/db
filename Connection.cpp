@@ -128,20 +128,10 @@ PyObject* Connection::GetSchema(CSession& session, bool refresh)
 	CHECKERR(pp.MoveFirst(), "error iteration version result");
 	std::string version(pp.GetString(1));
 
-	PySys_WriteStdout("SQL server version %s\n", version.c_str());
-	CCP_LOG_CH( s_chConn, "SQL server version %s", version.c_str());
-
 	// SQL server versions for reference:
 	// 9.=2005, 10.=2008 and 200R2, 11.=2012, 12.=2014, 13.=2016, 14.=2017, 15.=2019, 16.=2022, 17.=2025
-	// Support SQL Server versions from 2017=14 onwards.
-	if (strncmp(version.c_str(), "14.", 3) && strncmp(version.c_str(), "15.", 3) &&
-		strncmp(version.c_str(), "16.", 3) && strncmp(version.c_str(), "17.", 3))
-	{
-		std::string err("Invalid SQL Server version: ");
-		err += version;
-		PyErr_SetString(PyExc_RuntimeError, err.c_str());
-		return nullptr;
-	}
+	PySys_WriteStdout("SQL server version %s\n", version.c_str());
+	CCP_LOG_CH( s_chConn, "SQL server version %s", version.c_str());
 
 	CCP_LOG_CH(s_chConn, "Stored proc schema ...");
 	PyObject* procParams = EnumerateProcParams(session);
