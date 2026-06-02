@@ -1,3 +1,4 @@
+// Copyright © 2023 CCP ehf.
 #include "PythonBuff.h"
 
 //A simple Com wrapper for the python buffer

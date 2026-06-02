@@ -1,11 +1,10 @@
+// Copyright © 2003 CCP ehf.
+
 /* 
 	*************************************************************************
 
 	Utils.h
 
-	Author:    Matthias Gudmundsson
-	Created:   Jan. 2003
-	OS:        Win32
 	Project:   EVE Server Database Access
 
 	Description:   
@@ -16,8 +15,6 @@
 	Dependencies:
 
 		Python
-
-	(c) CCP 2003
 
 	*************************************************************************
 */

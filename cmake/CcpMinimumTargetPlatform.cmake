@@ -1,3 +1,4 @@
+# Copyright © 2025 CCP ehf.
 #[[
 Configures key CMake variables to be correct for the operating system ("platforms") we target.
 

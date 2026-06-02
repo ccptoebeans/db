@@ -1,3 +1,4 @@
+# Copyright © 2025 CCP ehf.
 if(NOT TARGET Destiny)
     find_dependency(BlueExposure REQUIRED CONFIG NO_CMAKE_PATH)
     set(_IMPORT_PREFIX ${CMAKE_CURRENT_LIST_DIR})

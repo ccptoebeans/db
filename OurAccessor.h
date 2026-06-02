@@ -1,16 +1,11 @@
+// Copyright © 2023 CCP ehf.
+
 /* 
 	*************************************************************************
 
 	OurAccessor.h
 
-	Author:    Kristjan Valur Jonsson
-	Created:   Feb. 2005
-	OS:        Win32
 	Project:   EVE Server Database Access
-
-	Split From:	TmpRowset.h
-	by:			James Hawk
-	Date:		July. 2023
 
 	Description:   
 
@@ -20,8 +15,6 @@
 	Dependencies:
 
 		Python
-
-	(c) CCP 2023
 
 	*************************************************************************
 */

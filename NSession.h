@@ -1,11 +1,10 @@
+// Copyright © 2005 CCP ehf.
+
 /* 
 	*************************************************************************
 
 	Session.h
 
-	Author:    Kristjan Valur Jonsson
-	Created:   feb. 2005
-	OS:        Win32
 	Project:   EVE Server Database Access
 
 	Description:   
@@ -16,8 +15,6 @@
 	Dependencies:
 
 		Python
-
-	(c) CCP 2005
 
 	*************************************************************************
 */

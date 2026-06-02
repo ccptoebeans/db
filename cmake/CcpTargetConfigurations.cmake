@@ -1,3 +1,4 @@
+# Copyright © 2025 CCP ehf.
 include(cmake/CcpVendorUtilities.cmake)
 
 macro(ensure_correct_target_type target)

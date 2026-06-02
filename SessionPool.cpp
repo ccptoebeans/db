@@ -1,11 +1,10 @@
+// Copyright © 2009 CCP ehf.
+
 /* 
 	*************************************************************************
 
 	SessionPool.h
 
-	Author:    Kristjan Valur Jonsson
-	Created:   sept. 2009
-	OS:        Win32
 	Project:   EVE Server Database Access
 
 	Description:   
@@ -21,8 +20,6 @@
 	Dependencies:
 
 		Python
-
-	(c) CCP 2009
 
 	*************************************************************************
 */

@@ -1,3 +1,4 @@
+# Copyright © 2021 CCP ehf.
 import blue
 import sys
 

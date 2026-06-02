@@ -1,11 +1,9 @@
+// Copyright © 2009 CCP ehf.
 /* 
 	*************************************************************************
 
 	BlockAllocator.cpp
 
-	Author:    Kristjan Valur Jonsson
-	Created:   Oct. 2009
-	OS:        Win32
 	Project:   EVE Server Database Access
 
 	Description:   
@@ -15,8 +13,6 @@
 	Dependencies:
 
 		Python
-
-	(c) CCP 2009
 
 	*************************************************************************
 */

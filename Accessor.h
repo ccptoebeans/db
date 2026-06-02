@@ -1,11 +1,9 @@
+// Copyright © 2023 CCP ehf.
 
 /* 
 	*************************************************************************
 
 	Accessor.h
-
-	Author:    James Hawk
-	Created:   July. 2023
 
 	Description:   
 
@@ -20,8 +18,6 @@
         some of its members which reference accessors. This is
         a blue class which would break the exposure macros, so would require
         refactor to work which is undesirable when adding this testing hook.
-
-	(c) CCP 2023
 
 	*************************************************************************
 */

@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
 // Used by db.rc

@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 #include "StdAfx.h"
 #include "TmpRowset.h"
 #include "NSession.h"

@@ -1,3 +1,4 @@
+// Copyright © 2023 CCP ehf.
 #include "MockSqlCommand.h"
 
 const wchar_t* MockSqlCommand::s_dummy_name = L"DUMMY";

@@ -1,17 +1,13 @@
+// Copyright © 2023 CCP ehf.
 /* 
 	*************************************************************************
 
 	MockSqlCommand.h
 
-	Author:    James Hawk
-	Created:   July. 2023
-
 	Description:   
 
 		Allows direct entry point to SetPyParam for testing input parameter
 		processing.
-
-	(c) CCP 2023
 
 	*************************************************************************
 */

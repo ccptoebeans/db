@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 #include "StdAfx.h"
 #include "Connection.h"
 #include "Utils.h"

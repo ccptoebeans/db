@@ -1,3 +1,4 @@
+// Copyright © 2023 CCP ehf.
 #include "MockAccessor.h"
 
 const wchar_t* MockAccessor::s_dummy_column_name = L"DUMMY";

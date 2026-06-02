@@ -1,3 +1,4 @@
+# Copyright © 2021 CCP ehf.
 cmake_minimum_required(VERSION 3.16)
 project(db VERSION 1.0.0)
 

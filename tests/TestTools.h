@@ -1,10 +1,8 @@
+// Copyright © 2023 CCP ehf.
 /* 
 	*************************************************************************
 
 	TestTools.h
-
-	Author:    James Hawk
-	Created:   July. 2023
 
 	Description:   
 
@@ -12,9 +10,6 @@
 		mocked db.
 
 		Can be used to excersise all dbtypes against various python inputs.
-		
-
-	(c) CCP 2023
 
 	*************************************************************************
 */

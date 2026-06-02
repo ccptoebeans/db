@@ -1,3 +1,4 @@
+# Copyright © 2025 CCP ehf.
 #[[
 This module implements the necessary parts for our <platform> / <arch> / <compiler> pattern.
 

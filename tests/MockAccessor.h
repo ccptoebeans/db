@@ -1,17 +1,13 @@
+// Copyright © 2023 CCP ehf.
 /* 
 	*************************************************************************
 
 	MockAccessor.h
 
-	Author:    James Hawk
-	Created:   July. 2023
-
 	Description:   
 
 		Overrides database access functions so they can be mocked
 		Designed to work using single value for simplicity.
-
-	(c) CCP 2023
 
 	*************************************************************************
 */

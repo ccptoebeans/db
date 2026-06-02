@@ -1,3 +1,4 @@
+// Copyright © 2023 CCP ehf.
 #include "MockNSession.h"
 
 extern "C" const CLSID CLSID_DataConvert;

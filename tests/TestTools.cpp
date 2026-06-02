@@ -1,3 +1,4 @@
+// Copyright © 2023 CCP ehf.
 #include "StdAfx.h"
 #include "TestTools.h"
 #include "MockSqlCommand.h"

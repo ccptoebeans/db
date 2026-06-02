@@ -1,3 +1,4 @@
+// Copyright © 2023 CCP ehf.
 #include "RowDescriptor.h"
 
 #include "utils.h"

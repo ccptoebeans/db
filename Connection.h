@@ -1,11 +1,10 @@
+// Copyright © 2002 CCP ehf.
+
 /* 
 	*************************************************************************
 
 	Connection.h
 
-	Author:    Matthias Gudmundsson
-	Created:   Jul. 2002
-	OS:        Win32
 	Project:   EVE Server Database Access
 
 	Description:   
@@ -16,8 +15,6 @@
 	Dependencies:
 
 		Blue, Python
-
-	(c) CCP 2002
 
 	*************************************************************************
 */

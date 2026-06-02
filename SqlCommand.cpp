@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 #include "SqlCommand.h"
 
 #include "PythonBuff.h"

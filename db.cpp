@@ -1,12 +1,5 @@
-//
-// db.cpp
-//
+// Copyright © 2001 CCP ehf.
 // Defines the entry point for the DLL application.
-//
-// J�rundur Sveinn Matth�asson
-// (c) CCP march 2001
-//
-
 
 #include "StdAfx.h"
 #include "Utils.h"

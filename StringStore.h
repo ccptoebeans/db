@@ -1,11 +1,10 @@
+// Copyright © 2006 CCP ehf.
+
 /* 
 	*************************************************************************
 
 	StringStore.h
 
-	Author:    Kristjan Valur Jonsson
-	Created:   Dec. 2006
-	OS:        Win32
 	Project:   EVE Server Database Access
 
 	Description:   
@@ -18,8 +17,6 @@
 	Dependencies:
 
 		Python
-
-	(c) CCP 2006
 
 	*************************************************************************
 */
