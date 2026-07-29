@@ -24,7 +24,7 @@
 #ifndef STRINGSTORE_H
 #define STRINGSTORE_H
 
-#include <hash_set>
+#include <unordered_set>
 #include "DelayedException.h"
 #include "BlockAllocator.h"
 
@@ -45,7 +45,7 @@ public:
     	mPython = false;
     	mData = data;
     	mElements = elems;
-    	mHash = Hash();
+    	mHash = hash();
     }
 
     InternalStoreElement(const InternalStoreElement& o)
@@ -120,7 +120,7 @@ public:
 	    }
 	    memcpy( tmp, mData, mElements * elen );
 	    mData = tmp;
-	    return 0;
+	    return nullptr;
     }
 
     PyObject* GetPython() override
@@ -133,21 +133,23 @@ public:
     	return mObject;
     }
 
+	size_t hash() const
+	{
+		// hash range of elements
+		size_t hash = 2166136261U;
+		const size_t maxHash = 64;
+		DataType* begin = mData;
+		DataType* end = mData + min(mElements, maxHash);
+		while (begin != end)
+			hash = 16777619U * hash ^ (size_t)*begin++;
+
+		return hash;
+	}
+
+
 private:
 	bool ToPython();
 
-    size_t Hash() const
-    {
-	    // hash range of elements
-	    size_t hash = 2166136261U;
-	    const size_t maxHash = 64;
-	    DataType* begin = mData;
-	    DataType* end = mData + min(mElements, maxHash);
-	    while (begin != end)
-		    hash = 16777619U * hash ^ (size_t)*begin++;
-
-	    return hash;
-    }
 
 	// raw data and python object are stored in a mutually exclusive manner for memory efficiency
 	union
@@ -168,17 +170,45 @@ private:
 
 
 
-typedef InternalStoreElement<char, true> StringStoreElement;		// utf-8 storage element
-typedef InternalStoreElement<char, false> ByteStoreElement;			// byte storage element
-typedef InternalStoreElement<wchar_t, true> WStringStoreElement;	// unicode storage element
+using StringStoreElement = InternalStoreElement<char, true>;		// utf-8 storage element
+using ByteStoreElement = InternalStoreElement<char, false>;			// byte storage element
+using WStringStoreElement = InternalStoreElement<wchar_t, true>;	// unicode storage element
+
+template<>
+struct std::hash<StringStoreElement>
+{
+	std::size_t operator()(const StringStoreElement& s) const noexcept
+	{
+		return s.hash();
+	}
+};
+
+template<>
+struct std::hash<ByteStoreElement>
+{
+	std::size_t operator()(const ByteStoreElement& s) const noexcept
+	{
+		return s.hash();
+	}
+};
+
+template<>
+struct std::hash<WStringStoreElement>
+{
+	std::size_t operator()(const WStringStoreElement& s) const noexcept
+	{
+		return s.hash();
+	}
+};
+
 
 template <typename ElementType, typename DataType>
 class InternalStore
 {
 public:
 	explicit InternalStore(SimplePoolAllocator& allocator) :
-	mAllocator( allocator ),
-	mSet( traits_t(), allocator_t( allocator ) )
+	m_stlAllocator(allocator),
+	mSet( m_stlAllocator )
 	{
 		mMemSaved = 0;
 	}
@@ -203,7 +233,7 @@ public:
     	res = 0;
     	if(r.second)
     	{
-    		DelayedException* e = el.Claim( mAllocator );
+    		DelayedException* e = el.Claim( m_stlAllocator.mA );
     		if(e)
     		{
     			return e;
@@ -220,13 +250,14 @@ public:
     size_t GetMemSaved() const { return mMemSaved; }
 
 private:
-    typedef stdext::hash_compare<ElementType> traits_t;
-    typedef StlPoolAllocator<ElementType> allocator_t;
+    using traits_t = std::hash<ElementType>;
+    using keyEqual = std::equal_to<ElementType>;
+    using allocator_t = StlPoolAllocator<ElementType>;
 
-    SimplePoolAllocator& mAllocator;
-	typedef stdext::hash_set<ElementType, traits_t, allocator_t> InternalStoreSet_t;
-    typedef typename InternalStoreSet_t::iterator InternalStoreSet_iterator;
+	using InternalStoreSet_t = std::unordered_set<ElementType, traits_t, keyEqual, allocator_t>;
+    using InternalStoreSet_iterator = typename InternalStoreSet_t::iterator;
 
+	allocator_t m_stlAllocator;
     InternalStoreSet_t mSet;
     size_t mMemSaved; // how much memory (without overhead) saved by the reuse
 };

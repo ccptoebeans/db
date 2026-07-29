@@ -18,7 +18,7 @@ PyObject* TestTools::TestParameter( int db_type, PyObject* value )
 		return nullptr;
 	BluePy getMem = BluePy( PyImport_Import( BluePyStr( "sys" ) ) );
 	if( !getMem )
-		return false;
+		return nullptr;
 	getMem = BluePy( PyObject_GetAttrString( getMem, "getpymalloced" ) );
 	if( !getMem )
 		PyErr_Clear(); // not supported, continue

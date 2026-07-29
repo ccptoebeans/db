@@ -220,7 +220,7 @@ PyObject *NSession::Execute(PyObject *args)
 
 	if (noblock && !mAllowSync)
 		//this is a tasklet that cannot block, so execution might as well be done on this thread
-		return PyErr_SetString(PyExc_RuntimeError, "This tasklet cannot block, and synchronous calls are not allowed"), 0;
+		return PyErr_SetString(PyExc_RuntimeError, "This tasklet cannot block, and synchronous calls are not allowed"), nullptr;
 
 	BluePy result;
 	if (noblock) {

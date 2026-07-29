@@ -70,7 +70,7 @@ public:
 
 	template <class T2>
 	struct rebind {
-		typedef StlPoolAllocator<T2> other;
+		using other = StlPoolAllocator<T2>;
 	};
 
 	T* allocate(size_t _Count, const void *hint) {
